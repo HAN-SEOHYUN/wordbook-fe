@@ -1,0 +1,63 @@
+# 프로젝트 폴더 구조
+```
+FE/
+├── .next/
+│   └── dev/
+├── app/
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx                    # ✏️ 수정됨 (API 연동)
+├── components/
+│   ├── ui/
+│   ├── flashcard-screen.tsx
+│   ├── theme-provider.tsx
+│   └── word-list-screen.tsx        # ✏️ 수정됨 (로딩/에러 처리 추가)
+├── hooks/
+│   ├── use-mobile.ts
+│   └── use-toast.ts
+├── lib/
+│   ├── api/
+│   │   └── vocabulary.ts           # 🆕 새로 추가 (API 클라이언트)
+│   └── utils/
+│       ├── utils.ts                # 기존 파일 (cn 함수)
+│       └── vocabulary.ts           # 🆕 새로 추가 (데이터 변환 유틸리티)
+├── node_modules/
+├── public/
+├── styles/
+│   └── globals.css
+├── types/
+│   └── vocabulary.ts               # 🆕 새로 추가 (타입 정의)
+├── .env.example                    # 🆕 새로 추가
+├── .env.local                      # 🆕 새로 추가
+├── .gitignore
+├── components.json
+├── next-env.d.ts
+├── next.config.mjs
+├── package-lock.json
+├── package.json
+├── pnpm-lock.yaml
+└── postcss.config.mjs
+```
+
+## 📂 `lib/` 폴더 상세 구조
+```
+lib/
+├── api/
+│   └── vocabulary.ts           # 🆕 API 클라이언트
+└── utils/
+    ├── utils.ts                # 기존 (cn 함수)
+    └── vocabulary.ts           # 🆕 데이터 변환 유틸리티
+```
+
+이제 import 경로도 정확하게 맞춰야 합니다!
+
+## Import 경로 확인
+```typescript
+// shadcn/ui 컴포넌트에서
+import { cn } from '@/lib/utils/utils'
+
+// page.tsx에서
+import { vocabularyResponsesToWords } from '@/lib/utils/vocabulary'
+```
+
+정확하게 이해했나요?
