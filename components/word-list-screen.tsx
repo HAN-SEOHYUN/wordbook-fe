@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { ChevronRight, ExternalLink } from "lucide-react"
 
 interface Word {
@@ -42,7 +43,10 @@ export function WordListScreen({
         <div className="px-6 py-5">
           <div className="flex items-start justify-between gap-3 mb-2">
             <div>
-              <h1 className="text-2xl font-bold text-foreground mb-1">EBS Wordbook</h1>
+              <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground mb-1">
+                <Image src="/bee.png" alt="Bee" width={32} height={32} className="object-contain" />
+                Wordbook
+              </h1>
               <p className="text-sm text-muted-foreground">{selectedDate ? formatDate(selectedDate) : "날짜를 선택하세요"}</p>
             </div>
             {currentLink && (
@@ -60,9 +64,9 @@ export function WordListScreen({
         </div>
       </header>
 
-      <div className="sticky top-[88px] z-10 bg-background/95 backdrop-blur-sm border-b border-border">
+      <div className="sticky top-[88px] z-10 bg-background/98 backdrop-blur-md border-b border-border shadow-sm">
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-1 px-4 py-3 min-w-max">
+          <div className="flex gap-2 px-5 py-3 min-w-max">
             {availableDates.map((date) => {
               const isSelected = date === selectedDate
               return (
@@ -70,19 +74,15 @@ export function WordListScreen({
                   key={date}
                   onClick={() => onDateChange(date)}
                   className={`
-                    relative px-4 py-2 rounded-t-lg font-medium text-sm transition-all duration-200
+                    relative px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 whitespace-nowrap
                     ${
                       isSelected
-                        ? "bg-card text-primary border-t-2 border-x-2 border-primary shadow-md -mb-px"
-                        : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                        : "bg-muted/80 text-muted-foreground hover:bg-muted active:scale-95"
                     }
                   `}
-                  style={{
-                    clipPath: isSelected ? "polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)" : "none",
-                  }}
                 >
-                  <span className="whitespace-nowrap">{formatDate(date)}</span>
-                  {isSelected && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-card" />}
+                  {formatDate(date).replace(/년|월/g, ".").replace("일", "")}
                 </button>
               )
             })}

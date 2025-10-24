@@ -8,9 +8,13 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "EBS Wordbook - 영단어 학습",
+  title: "Wordbook - 영단어 학습",
   description: "EBS 모닝스페셜 영단어 학습 서비스",
   generator: "v0.app",
+  icons: {
+    icon: "/bee.png",
+    apple: "/bee.png",
+  },
 }
 
 export default function RootLayout({
