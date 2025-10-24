@@ -276,9 +276,12 @@ export function WordListScreen({
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => onWordSelect(index)} className="w-full text-left group">
+                    <div className="w-full group">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
+                        <div
+                          className="flex-1 min-w-0 cursor-pointer"
+                          onClick={() => onWordSelect(index)}
+                        >
                           <div className="flex items-center gap-3 mb-3">
                             <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
                               {index + 1}
@@ -298,10 +301,10 @@ export function WordListScreen({
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
-                          <ChevronRight className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                          <ChevronRight className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all cursor-pointer" onClick={() => onWordSelect(index)} />
                         </div>
                       </div>
-                    </button>
+                    </div>
                   )}
                 </div>
               )
