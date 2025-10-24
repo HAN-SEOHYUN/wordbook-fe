@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { ChevronRight, ExternalLink, Pencil, Check, X } from "lucide-react"
+import { ChevronRight, ExternalLink, Pencil, Check, X, Plus } from "lucide-react"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
 
 interface Word {
@@ -38,6 +38,9 @@ export function WordListScreen({
   const [editEnglish, setEditEnglish] = useState("")
   const [editKorean, setEditKorean] = useState("")
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
+  const [isAddingNew, setIsAddingNew] = useState(false)
+  const [newEnglish, setNewEnglish] = useState("")
+  const [newKorean, setNewKorean] = useState("")
 
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type })
@@ -84,6 +87,51 @@ export function WordListScreen({
     } catch (error) {
       console.error("Failed to update word:", error)
       showToast("단어 수정에 실패했습니다", "error")
+    }
+  }
+
+  const startAddNew = () => {
+    setIsAddingNew(true)
+    setNewEnglish("")
+    setNewKorean("")
+  }
+
+  const cancelAddNew = () => {
+    setIsAddingNew(false)
+    setNewEnglish("")
+    setNewKorean("")
+  }
+
+  const saveNewWord = async () => {
+    if (!newEnglish.trim() || !newKorean.trim()) {
+      showToast("영어와 한국어를 모두 입력해주세요", "error")
+      return
+    }
+
+    try {
+      const response = await vocabularyAPI.createVocabulary({
+        english_word: newEnglish,
+        korean_meaning: newKorean,
+        date: selectedDate,
+        source_url: currentLink || undefined,
+      })
+
+      const newWord: Word = {
+        id: response.id,
+        english: response.english_word,
+        korean: response.korean_meaning,
+      }
+
+      const updatedWords = [...words, newWord]
+      onWordUpdate?.(updatedWords)
+
+      showToast("단어가 성공적으로 추가되었습니다", "success")
+      setIsAddingNew(false)
+      setNewEnglish("")
+      setNewKorean("")
+    } catch (error) {
+      console.error("Failed to create word:", error)
+      showToast("단어 추가에 실패했습니다", "error")
     }
   }
 
@@ -260,6 +308,72 @@ export function WordListScreen({
             })}
           </div>
 
+          {/* Add New Word Section */}
+          <div className="px-5 mt-6 max-w-2xl mx-auto">
+            {isAddingNew ? (
+              <div className="w-full bg-card border-2 border-primary/30 rounded-2xl p-6 shadow-lg">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Plus className="w-5 h-5 text-primary" />
+                    <span className="text-sm font-semibold text-primary">새 단어 추가</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">영어</label>
+                      <input
+                        type="text"
+                        value={newEnglish}
+                        onChange={(e) => setNewEnglish(e.target.value)}
+                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        placeholder="영어 단어 또는 구문"
+                        autoFocus
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
+                      <input
+                        type="text"
+                        value={newKorean}
+                        onChange={(e) => setNewKorean(e.target.value)}
+                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        placeholder="한국어 뜻"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={saveNewWord}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm"
+                    >
+                      <Check className="w-4 h-4" />
+                      추가
+                    </button>
+                    <button
+                      onClick={cancelAddNew}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-muted text-muted-foreground rounded-xl font-semibold text-sm hover:bg-muted/80 active:scale-[0.98] transition-all"
+                    >
+                      <X className="w-4 h-4" />
+                      취소
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={startAddNew}
+                className="w-full bg-primary/5 border-2 border-dashed border-primary/30 rounded-2xl p-5 hover:bg-primary/10 hover:border-primary/50 active:scale-[0.98] transition-all group"
+              >
+                <div className="flex items-center justify-center gap-2 text-primary">
+                  <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="font-semibold text-sm">새 단어 추가</span>
+                </div>
+              </button>
+            )}
+          </div>
+
           {/* Footer Info */}
           <div className="mt-8 px-6 text-center">
             <p className="text-xs text-muted-foreground">총 {words.length}개의 단어</p>
@@ -269,11 +383,79 @@ export function WordListScreen({
 
       {/* Empty State */}
       {!isLoading && !error && words.length === 0 && (
-        <div className="flex items-center justify-center py-16 px-4">
-          <div className="text-center">
-            <p className="text-muted-foreground">이 날짜에는 단어가 없습니다.</p>
+        <>
+          <div className="flex items-center justify-center py-16 px-4">
+            <div className="text-center">
+              <p className="text-muted-foreground">이 날짜에는 단어가 없습니다.</p>
+            </div>
           </div>
-        </div>
+
+          {/* Add New Word Section for Empty State */}
+          <div className="px-5 max-w-2xl mx-auto">
+            {isAddingNew ? (
+              <div className="w-full bg-card border-2 border-primary/30 rounded-2xl p-6 shadow-lg">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Plus className="w-5 h-5 text-primary" />
+                    <span className="text-sm font-semibold text-primary">새 단어 추가</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">영어</label>
+                      <input
+                        type="text"
+                        value={newEnglish}
+                        onChange={(e) => setNewEnglish(e.target.value)}
+                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        placeholder="영어 단어 또는 구문"
+                        autoFocus
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
+                      <input
+                        type="text"
+                        value={newKorean}
+                        onChange={(e) => setNewKorean(e.target.value)}
+                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        placeholder="한국어 뜻"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={saveNewWord}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm"
+                    >
+                      <Check className="w-4 h-4" />
+                      추가
+                    </button>
+                    <button
+                      onClick={cancelAddNew}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-muted text-muted-foreground rounded-xl font-semibold text-sm hover:bg-muted/80 active:scale-[0.98] transition-all"
+                    >
+                      <X className="w-4 h-4" />
+                      취소
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={startAddNew}
+                className="w-full bg-primary/5 border-2 border-dashed border-primary/30 rounded-2xl p-5 hover:bg-primary/10 hover:border-primary/50 active:scale-[0.98] transition-all group"
+              >
+                <div className="flex items-center justify-center gap-2 text-primary">
+                  <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="font-semibold text-sm">새 단어 추가</span>
+                </div>
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       {/* Toast */}
