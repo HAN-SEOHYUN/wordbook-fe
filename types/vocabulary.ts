@@ -3,6 +3,7 @@ export interface VocabularyResponse {
   english_word: string
   korean_meaning: string
   date: string // YYYY-MM-DD format
+  source_url?: string | null
   created_at: string
   updated_at: string
 }

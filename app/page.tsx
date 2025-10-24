@@ -13,6 +13,7 @@ export default function Home() {
   const [availableDates, setAvailableDates] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState<string>("")
   const [currentVocabulary, setCurrentVocabulary] = useState<Word[]>([])
+  const [currentLink, setCurrentLink] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -54,10 +55,17 @@ export default function Home() {
         const vocabData = await vocabularyAPI.getVocabularyByDate(selectedDate)
         const words = vocabularyResponsesToWords(vocabData)
         setCurrentVocabulary(words)
+
+        // 같은 날짜의 모든 단어는 동일한 source_url을 가지므로 첫 번째 항목에서 추출
+        const link = vocabData.length > 0 ? (vocabData[0].source_url || "") : ""
+        console.log("📍 DEBUG: vocabData[0]:", vocabData[0])
+        console.log("📍 DEBUG: extracted link:", link)
+        setCurrentLink(link)
       } catch (err) {
         console.error("Failed to fetch vocabulary:", err)
         setError("단어 목록을 불러오는데 실패했습니다.")
         setCurrentVocabulary([])
+        setCurrentLink("")
       } finally {
         setIsLoading(false)
       }
@@ -116,6 +124,7 @@ export default function Home() {
           selectedDate={selectedDate}
           availableDates={availableDates}
           onDateChange={handleDateChange}
+          currentLink={currentLink}
           isLoading={isLoading}
           error={error}
         />

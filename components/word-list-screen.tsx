@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, ExternalLink } from "lucide-react"
 
 interface Word {
   id: number
@@ -14,6 +14,7 @@ interface WordListScreenProps {
   selectedDate: string
   availableDates: string[]
   onDateChange: (date: string) => void
+  currentLink?: string
   isLoading?: boolean
   error?: string | null
 }
@@ -24,9 +25,11 @@ export function WordListScreen({
   selectedDate,
   availableDates,
   onDateChange,
+  currentLink = "",
   isLoading = false,
   error = null,
 }: WordListScreenProps) {
+  console.log("📍 WordListScreen received currentLink:", currentLink)
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return `${date.getFullYear()}년 ${String(date.getMonth() + 1).padStart(2, "0")}월 ${String(date.getDate()).padStart(2, "0")}일`
@@ -37,8 +40,23 @@ export function WordListScreen({
       {/* Header */}
       <header className="sticky top-0 z-10 bg-card border-b border-border shadow-sm">
         <div className="px-6 py-5">
-          <h1 className="text-2xl font-bold text-foreground mb-1">EBS Wordbook</h1>
-          <p className="text-sm text-muted-foreground">{selectedDate ? formatDate(selectedDate) : "날짜를 선택하세요"}</p>
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground mb-1">EBS Wordbook</h1>
+              <p className="text-sm text-muted-foreground">{selectedDate ? formatDate(selectedDate) : "날짜를 선택하세요"}</p>
+            </div>
+            {currentLink && (
+              <a
+                href={currentLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-full transition-all active:scale-95 shadow-sm"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="whitespace-nowrap">원문 보기</span>
+              </a>
+            )}
+          </div>
         </div>
       </header>
 
