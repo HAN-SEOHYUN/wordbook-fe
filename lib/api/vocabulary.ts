@@ -1,4 +1,4 @@
-import type { VocabularyResponse, VocabularyCreate, VocabularyUpdate } from '@/types/vocabulary'
+import type { VocabularyResponse, VocabularyCreate, VocabularyUpdate, VocabularyListResponse } from '@/types/vocabulary'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
 
@@ -23,13 +23,13 @@ class VocabularyAPI {
   }
 
   /**
-   * 특정 날짜의 단어 목록 조회
+   * 특정 날짜의 단어 목록 조회 (날짜 + source_url + 단어 목록 포함)
    */
   async getVocabularyByDate(
     targetDate: string,
     limit: number = 100,
     offset: number = 0
-  ): Promise<VocabularyResponse[]> {
+  ): Promise<VocabularyListResponse> {
     const params = new URLSearchParams({
       target_date: targetDate,
       limit: limit.toString(),
@@ -37,11 +37,11 @@ class VocabularyAPI {
     })
 
     const response = await fetch(`${this.baseUrl}/api/v1/vocabulary/?${params}`)
-    
+
     if (!response.ok) {
       throw new Error(`Failed to fetch vocabulary: ${response.statusText}`)
     }
-    
+
     return response.json()
   }
 

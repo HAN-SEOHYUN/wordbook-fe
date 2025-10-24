@@ -52,13 +52,15 @@ export default function Home() {
       try {
         setIsLoading(true)
         setError(null)
-        const vocabData = await vocabularyAPI.getVocabularyByDate(selectedDate)
-        const words = vocabularyResponsesToWords(vocabData)
+        const response = await vocabularyAPI.getVocabularyByDate(selectedDate)
+
+        // 새로운 응답 구조: { date, source_url, words }
+        const words = vocabularyResponsesToWords(response.words)
         setCurrentVocabulary(words)
 
-        // 같은 날짜의 모든 단어는 동일한 source_url을 가지므로 첫 번째 항목에서 추출
-        const link = vocabData.length > 0 ? (vocabData[0].source_url || "") : ""
-        console.log("📍 DEBUG: vocabData[0]:", vocabData[0])
+        // 대표 source_url 사용 (직접 추가한 단어가 있어도 원문 링크 표시됨)
+        const link = response.source_url || ""
+        console.log("📍 DEBUG: response:", response)
         console.log("📍 DEBUG: extracted link:", link)
         setCurrentLink(link)
       } catch (err) {
