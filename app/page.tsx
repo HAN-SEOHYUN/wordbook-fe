@@ -87,6 +87,10 @@ export default function Home() {
     setSelectedDate(date)
   }
 
+  const handleWordUpdate = (updatedWords: Word[]) => {
+    setCurrentVocabulary(updatedWords)
+  }
+
   // 로딩 중이거나 에러가 있을 때
   if (isLoading && availableDates.length === 0) {
     return (
@@ -127,6 +131,7 @@ export default function Home() {
           currentLink={currentLink}
           isLoading={isLoading}
           error={error}
+          onWordUpdate={handleWordUpdate}
         />
       ) : (
         <FlashcardScreen words={currentVocabulary} initialIndex={selectedWordIndex} onBack={handleBackToList} />

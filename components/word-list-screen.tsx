@@ -1,7 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
-import { ChevronRight, ExternalLink } from "lucide-react"
+import { ChevronRight, ExternalLink, Pencil, Check, X } from "lucide-react"
+import { vocabularyAPI } from "@/lib/api/vocabulary"
 
 interface Word {
   id: number
@@ -18,6 +20,7 @@ interface WordListScreenProps {
   currentLink?: string
   isLoading?: boolean
   error?: string | null
+  onWordUpdate?: (updatedWords: Word[]) => void
 }
 
 export function WordListScreen({
@@ -29,8 +32,61 @@ export function WordListScreen({
   currentLink = "",
   isLoading = false,
   error = null,
+  onWordUpdate,
 }: WordListScreenProps) {
-  console.log("📍 WordListScreen received currentLink:", currentLink)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editEnglish, setEditEnglish] = useState("")
+  const [editKorean, setEditKorean] = useState("")
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  const startEdit = (word: Word, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditingId(word.id)
+    setEditEnglish(word.english)
+    setEditKorean(word.korean)
+  }
+
+  const cancelEdit = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditingId(null)
+    setEditEnglish("")
+    setEditKorean("")
+  }
+
+  const saveEdit = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+
+    if (!editEnglish.trim() || !editKorean.trim()) {
+      showToast("영어와 한국어를 모두 입력해주세요", "error")
+      return
+    }
+
+    try {
+      await vocabularyAPI.updateVocabulary(editingId!, {
+        english_word: editEnglish,
+        korean_meaning: editKorean,
+      })
+
+      const updatedWords = words.map((w) =>
+        w.id === editingId ? { ...w, english: editEnglish, korean: editKorean } : w
+      )
+      onWordUpdate?.(updatedWords)
+
+      showToast("단어가 성공적으로 수정되었습니다", "success")
+      setEditingId(null)
+      setEditEnglish("")
+      setEditKorean("")
+    } catch (error) {
+      console.error("Failed to update word:", error)
+      showToast("단어 수정에 실패했습니다", "error")
+    }
+  }
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return `${date.getFullYear()}년 ${String(date.getMonth() + 1).padStart(2, "0")}월 ${String(date.getDate()).padStart(2, "0")}일`
@@ -112,28 +168,96 @@ export function WordListScreen({
       {/* Word List */}
       {!isLoading && !error && words.length > 0 && (
         <>
-          <div className="px-4 pt-6 space-y-3 max-w-2xl mx-auto">
-            {words.map((word, index) => (
-              <button
-                key={word.id}
-                onClick={() => onWordSelect(index)}
-                className="w-full bg-card border border-border rounded-lg p-5 shadow-sm hover:shadow-md transition-all duration-200 hover:border-primary/50 active:scale-[0.98] text-left group"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-3 mb-2">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <h3 className="text-lg font-bold text-foreground tracking-wide">{word.english}</h3>
+          <div className="px-5 pt-6 space-y-4 max-w-2xl mx-auto">
+            {words.map((word, index) => {
+              const isEditing = editingId === word.id
+
+              return (
+                <div
+                  key={word.id}
+                  className="w-full bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-200 hover:border-primary/30"
+                >
+                  {isEditing ? (
+                    <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                          {index + 1}
+                        </span>
+                        <span className="text-sm font-semibold text-muted-foreground">수정 중</span>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">영어</label>
+                          <input
+                            type="text"
+                            value={editEnglish}
+                            onChange={(e) => setEditEnglish(e.target.value)}
+                            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                            placeholder="영어 단어 또는 구문"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
+                          <input
+                            type="text"
+                            value={editKorean}
+                            onChange={(e) => setEditKorean(e.target.value)}
+                            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                            placeholder="한국어 뜻"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={saveEdit}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm"
+                        >
+                          <Check className="w-4 h-4" />
+                          저장
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-muted text-muted-foreground rounded-xl font-semibold text-sm hover:bg-muted/80 active:scale-[0.98] transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                          취소
+                        </button>
+                      </div>
                     </div>
-                    <div className="h-px bg-border mb-2" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">{word.korean}</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                  ) : (
+                    <button onClick={() => onWordSelect(index)} className="w-full text-left group">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                              {index + 1}
+                            </span>
+                            <h3 className="text-xl font-bold text-foreground tracking-wide leading-tight">
+                              {word.english}
+                            </h3>
+                          </div>
+                          <div className="h-px bg-gradient-to-r from-border to-transparent mb-3" />
+                          <p className="text-base text-muted-foreground leading-relaxed pl-10">{word.korean}</p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+                          <button
+                            onClick={(e) => startEdit(word, e)}
+                            className="p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all active:scale-95"
+                            aria-label="수정"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <ChevronRight className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                        </div>
+                      </div>
+                    </button>
+                  )}
                 </div>
-              </button>
-            ))}
+              )
+            })}
           </div>
 
           {/* Footer Info */}
@@ -148,6 +272,21 @@ export function WordListScreen({
         <div className="flex items-center justify-center py-16 px-4">
           <div className="text-center">
             <p className="text-muted-foreground">이 날짜에는 단어가 없습니다.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div
+            className={`px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-md border ${
+              toast.type === "success"
+                ? "bg-accent/95 border-accent text-accent-foreground"
+                : "bg-destructive/95 border-destructive text-destructive-foreground"
+            }`}
+          >
+            <p className="font-semibold text-sm">{toast.message}</p>
           </div>
         </div>
       )}
