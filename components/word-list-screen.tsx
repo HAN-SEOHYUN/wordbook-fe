@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { ChevronRight, ExternalLink, Pencil, Check, X, Plus, Volume2, EyeOff, Eye, Trophy } from "lucide-react"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
+import type { TestAvailabilityResponse } from "@/types/test"
 
 interface Word {
   id: number
@@ -22,6 +23,7 @@ interface WordListScreenProps {
   error?: string | null
   onWordUpdate?: (updatedWords: Word[]) => void
   onStartTest: () => void
+  testAvailability: TestAvailabilityResponse | null
 }
 
 export function WordListScreen({
@@ -35,6 +37,7 @@ export function WordListScreen({
   error = null,
   onWordUpdate,
   onStartTest,
+  testAvailability,
 }: WordListScreenProps) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editEnglish, setEditEnglish] = useState("")
@@ -44,6 +47,15 @@ export function WordListScreen({
   const [newEnglish, setNewEnglish] = useState("")
   const [newKorean, setNewKorean] = useState("")
   const [isTestMode, setIsTestMode] = useState(false)
+
+  // 시험 시간이면 자동으로 isTestMode = true
+  useEffect(() => {
+    if (testAvailability?.is_available) {
+      setIsTestMode(true)
+    } else {
+      setIsTestMode(false)
+    }
+  }, [testAvailability])
 
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type })
@@ -215,7 +227,7 @@ export function WordListScreen({
             <div className="flex items-center gap-3">
               <Trophy className="w-5 h-5 text-yellow-600" />
               <div>
-                <p className="text-sm font-semibold text-yellow-900">시험 모드가 활성화되었습니다</p>
+                <p className="text-sm font-semibold text-yellow-900">🚀 지금은 시험시간입니다.</p>
                 <p className="text-xs text-yellow-700">단어의 뜻이 가려져 있습니다. 준비가 되면 아래 버튼을 눌러 테스트를 시작하세요.</p>
               </div>
             </div>
@@ -279,7 +291,7 @@ export function WordListScreen({
       {/* Word List */}
       {!isLoading && !error && words.length > 0 && (
         <>
-          {/* Challenge Test Button - Only shown in test mode */}
+          {/* Challenge Test Button - Only shown when test is available */}
           {isTestMode && (
             <div className="px-5 pt-6 pb-2 max-w-2xl mx-auto">
               <button
@@ -299,14 +311,39 @@ export function WordListScreen({
           )}
 
           <div className="px-5 pt-6 space-y-4 max-w-2xl mx-auto">
-            {words.map((word, index) => {
-              const isEditing = editingId === word.id
+            {isTestMode ? (
+              // 시험 모드: 스켈레톤만 표시 (클릭 불가)
+              words.map((_, index) => (
+                <div key={index} className="w-full bg-card border border-border rounded-2xl p-6 shadow-sm animate-pulse">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-7 h-7 rounded-full bg-muted" />
+                        <div className="h-6 bg-muted rounded-lg w-32" />
+                      </div>
+                      <div className="h-px bg-gradient-to-r from-border to-transparent mb-3" />
+                      <div className="pl-10">
+                        <div className="h-5 bg-muted rounded-lg w-48" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+                      <div className="w-9 h-9 rounded-lg bg-muted" />
+                      <div className="w-9 h-9 rounded-lg bg-muted" />
+                      <div className="w-6 h-6 rounded bg-muted" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              // 일반 모드: 실제 단어 카드 표시 (클릭 가능)
+              words.map((word, index) => {
+                const isEditing = editingId === word.id
 
-              return (
-                <div
-                  key={word.id}
-                  className="w-full bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-200 hover:border-primary/30"
-                >
+                return (
+                  <div
+                    key={word.id}
+                    className="w-full bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-200 hover:border-primary/30"
+                  >
                   {isEditing ? (
                     <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-3 mb-2">
@@ -415,7 +452,8 @@ export function WordListScreen({
                   )}
                 </div>
               )
-            })}
+            })
+            )}
           </div>
 
           {/* Add New Word Section - Hidden in test mode */}

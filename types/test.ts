@@ -20,6 +20,8 @@ export interface TestWeek {
   name: string
   start_date: string // YYYY-MM-DD
   end_date: string // YYYY-MM-DD
+  test_start_datetime: string // YYYY-MM-DD HH:MM:SS
+  test_end_datetime: string // YYYY-MM-DD HH:MM:SS
   word_count: number
   created_at: string
   updated_at: string
@@ -42,6 +44,8 @@ export interface TestWeekWordsResponse {
   week_name: string
   start_date: string // YYYY-MM-DD
   end_date: string // YYYY-MM-DD
+  test_start_datetime: string // YYYY-MM-DD HH:MM:SS
+  test_end_datetime: string // YYYY-MM-DD HH:MM:SS
   words: TestWeekWord[]
 }
 
@@ -90,4 +94,23 @@ export interface TestSubmitResponse {
   correct_count: number
   incorrect_count: number
   results: AnswerResultItem[]
+}
+
+// ============================================================
+// Test Availability Types
+// ============================================================
+export interface TestAvailabilityWeekInfo {
+  twi_id: number
+  name: string
+  start_date: string // YYYY-MM-DD
+  end_date: string // YYYY-MM-DD
+  test_start_datetime: string // YYYY-MM-DD HH:MM:SS
+  test_end_datetime: string // YYYY-MM-DD HH:MM:SS
+}
+
+export interface TestAvailabilityResponse {
+  is_available: boolean
+  test_week?: TestAvailabilityWeekInfo
+  remaining_minutes?: number
+  next_test_datetime?: string // YYYY-MM-DD HH:MM:SS
 }

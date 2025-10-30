@@ -7,9 +7,10 @@ import { UserSelectionScreen } from "@/components/user-selection-screen"
 import { TestScreen } from "@/components/test-screen"
 import { TestResultScreen } from "@/components/test-result-screen"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
+import { testsAPI } from "@/lib/api/tests"
 import { vocabularyResponsesToWords } from "@/lib/utils"
 import type { Word } from "@/types/vocabulary"
-import type { TestWeekWord, TestSubmitResponse } from "@/types/test"
+import type { TestWeekWord, TestSubmitResponse, TestAvailabilityResponse } from "@/types/test"
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<"list" | "flashcard" | "userSelection" | "test" | "result">("list")
@@ -28,6 +29,28 @@ export default function Home() {
   const [testWeekName, setTestWeekName] = useState<string>("")
   const [testResult, setTestResult] = useState<TestSubmitResponse | null>(null)
 
+  // 시험 가능 여부 상태
+  const [testAvailability, setTestAvailability] = useState<TestAvailabilityResponse | null>(null)
+
+  // 시험 가능 여부 체크
+  useEffect(() => {
+    const checkTestAvailability = async () => {
+      try {
+        const availability = await testsAPI.getCurrentAvailability()
+        setTestAvailability(availability)
+      } catch (err) {
+        console.error("Failed to check test availability:", err)
+      }
+    }
+
+    checkTestAvailability()
+
+    // 1분마다 시험 가능 여부 재확인
+    const interval = setInterval(checkTestAvailability, 60000)
+
+    return () => clearInterval(interval)
+  }, [])
+
   // 초기 데이터 로딩: 사용 가능한 날짜 목록 가져오기
   useEffect(() => {
     const fetchAvailableDates = async () => {
@@ -35,13 +58,13 @@ export default function Home() {
         setIsLoading(true)
         setError(null)
         const dates = await vocabularyAPI.getAvailableDates()
-        
+
         if (dates.length === 0) {
           setError("사용 가능한 날짜가 없습니다.")
           setIsLoading(false)
           return
         }
-        
+
         setAvailableDates(dates)
         setSelectedDate(dates[0]) // 가장 최신 날짜를 기본으로 선택
       } catch (err) {
@@ -181,6 +204,7 @@ export default function Home() {
           error={error}
           onWordUpdate={handleWordUpdate}
           onStartTest={handleStartTest}
+          testAvailability={testAvailability}
         />
       ) : currentView === "flashcard" ? (
         <FlashcardScreen words={currentVocabulary} initialIndex={selectedWordIndex} onBack={handleBackToList} />
