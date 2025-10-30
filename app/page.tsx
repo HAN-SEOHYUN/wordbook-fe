@@ -76,6 +76,11 @@ export default function Home() {
     fetchVocabulary()
   }, [selectedDate])
 
+  const handleStartTest = () => {
+    // TODO: 나중에 사용자 선택 화면으로 이동
+    console.log("테스트 시작!")
+  }
+
   const handleWordSelect = (index: number) => {
     setSelectedWordIndex(index)
     setCurrentView("flashcard")
@@ -134,6 +139,7 @@ export default function Home() {
           isLoading={isLoading}
           error={error}
           onWordUpdate={handleWordUpdate}
+          onStartTest={handleStartTest}
         />
       ) : (
         <FlashcardScreen words={currentVocabulary} initialIndex={selectedWordIndex} onBack={handleBackToList} />

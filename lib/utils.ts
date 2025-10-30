@@ -14,7 +14,7 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function vocabularyResponseToWord(vocab: VocabularyResponse): Word {
   return {
-    id: vocab.id,
+    id: vocab.wb_id,
     english: vocab.english_word,
     korean: vocab.korean_meaning,
   }
