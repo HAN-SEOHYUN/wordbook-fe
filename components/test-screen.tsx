@@ -73,7 +73,7 @@ export function TestScreen({ trId, words, userName, weekName, onComplete, onBack
         <div className="max-w-2xl mx-auto space-y-4">
           <div className="bg-accent/20 border border-accent rounded-2xl p-4 mb-6">
             <p className="text-sm font-semibold text-accent-foreground text-center">
-              한글을 보고 영어를 입력하세요. 제출하기 버튼을 눌러주세요.
+              뜻을 보고 영어를 입력하세요. 제출하기 버튼을 눌러주세요.
             </p>
           </div>
 
@@ -91,7 +91,7 @@ export function TestScreen({ trId, words, userName, weekName, onComplete, onBack
                 </div>
                 <div className="flex-1 space-y-3">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">한글</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">뜻</p>
                     <p className="text-lg font-bold text-foreground">{word.word_meaning}</p>
                   </div>
                   <div>

@@ -86,7 +86,7 @@ export function FlashcardScreen({ words, initialIndex, onBack }: FlashcardScreen
           className="flex items-center gap-2 rounded-full px-4 py-2 active:scale-95 transition-all"
         >
           <ArrowLeftRight className="w-4 h-4" />
-          <span className="text-xs font-semibold">{isKoreanFirst ? "한→영" : "영→한"}</span>
+          <span className="text-xs font-semibold">{isKoreanFirst ? "뜻→영" : "영→뜻"}</span>
         </Button>
         <div className="flex items-center gap-2 px-4 py-1.5 bg-muted/50 rounded-full">
           <span className="text-sm font-bold text-primary">{currentIndex + 1}</span>
@@ -134,7 +134,7 @@ export function FlashcardScreen({ words, initialIndex, onBack }: FlashcardScreen
                   } text-xs font-bold rounded-full mb-8`}
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${isKoreanFirst ? "bg-accent" : "bg-primary"}`} />
-                  {isKoreanFirst ? "한글" : "영어"}
+                  {isKoreanFirst ? "뜻" : "영어"}
                 </div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-wide leading-tight px-4">
                   {isKoreanFirst ? currentWord.korean : currentWord.english}
@@ -162,7 +162,7 @@ export function FlashcardScreen({ words, initialIndex, onBack }: FlashcardScreen
                   } text-xs font-bold rounded-full mb-8`}
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${isKoreanFirst ? "bg-primary" : "bg-accent"}`} />
-                  {isKoreanFirst ? "영어" : "한글"}
+                  {isKoreanFirst ? "영어" : "뜻"}
                 </div>
                 <p className="text-2xl md:text-3xl font-bold text-foreground leading-relaxed px-4">
                   {isKoreanFirst ? currentWord.english : currentWord.korean}
