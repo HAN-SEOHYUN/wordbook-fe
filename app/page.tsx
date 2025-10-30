@@ -4,12 +4,14 @@ import { useState, useEffect } from "react"
 import { WordListScreen } from "@/components/word-list-screen"
 import { FlashcardScreen } from "@/components/flashcard-screen"
 import { UserSelectionScreen } from "@/components/user-selection-screen"
+import { TestScreen } from "@/components/test-screen"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
 import { vocabularyResponsesToWords } from "@/lib/utils"
 import type { Word } from "@/types/vocabulary"
+import type { TestWeekWord } from "@/types/test"
 
 export default function Home() {
-  const [currentView, setCurrentView] = useState<"list" | "flashcard" | "userSelection">("list")
+  const [currentView, setCurrentView] = useState<"list" | "flashcard" | "userSelection" | "test">("list")
   const [selectedWordIndex, setSelectedWordIndex] = useState(0)
   const [availableDates, setAvailableDates] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState<string>("")
@@ -17,6 +19,12 @@ export default function Home() {
   const [currentLink, setCurrentLink] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // 시험 관련 상태
+  const [testTrId, setTestTrId] = useState<number>(0)
+  const [testWords, setTestWords] = useState<TestWeekWord[]>([])
+  const [testUserName, setTestUserName] = useState<string>("")
+  const [testWeekName, setTestWeekName] = useState<string>("")
 
   // 초기 데이터 로딩: 사용 가능한 날짜 목록 가져오기
   useEffect(() => {
@@ -94,9 +102,22 @@ export default function Home() {
     setCurrentView("list")
   }
 
-  const handleUserSelectionComplete = (userId: number, weekId: number) => {
-    // TODO: TestScreen으로 이동 (다음 단계)
-    console.log("테스트 시작:", { userId, weekId })
+  const handleUserSelectionComplete = (trId: number, words: TestWeekWord[], userName: string, weekName: string) => {
+    setTestTrId(trId)
+    setTestWords(words)
+    setTestUserName(userName)
+    setTestWeekName(weekName)
+    setCurrentView("test")
+  }
+
+  const handleTestComplete = () => {
+    // TODO: 결과 화면으로 이동 (다음 단계)
+    console.log("테스트 완료!")
+    setCurrentView("list")
+  }
+
+  const handleBackFromTest = () => {
+    setCurrentView("userSelection")
   }
 
   const handleDateChange = (date: string) => {
@@ -154,6 +175,15 @@ export default function Home() {
         <FlashcardScreen words={currentVocabulary} initialIndex={selectedWordIndex} onBack={handleBackToList} />
       ) : currentView === "userSelection" ? (
         <UserSelectionScreen onStartTest={handleUserSelectionComplete} onBack={handleBackFromUserSelection} />
+      ) : currentView === "test" ? (
+        <TestScreen
+          trId={testTrId}
+          words={testWords}
+          userName={testUserName}
+          weekName={testWeekName}
+          onComplete={handleTestComplete}
+          onBack={handleBackFromTest}
+        />
       ) : null}
     </main>
   )

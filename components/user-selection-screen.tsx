@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { User, ChevronRight, ChevronDown } from "lucide-react"
-import { usersAPI, testWeeksAPI } from "@/lib/api"
-import type { User as UserType, TestWeek } from "@/types/test"
+import { usersAPI, testWeeksAPI, testsAPI } from "@/lib/api"
+import type { User as UserType, TestWeek, TestWeekWord } from "@/types/test"
 
 interface UserSelectionScreenProps {
-  onStartTest: (userId: number, weekId: number) => void
+  onStartTest: (trId: number, words: any[], userName: string, weekName: string) => void
   onBack: () => void
 }
 
@@ -18,6 +18,7 @@ export function UserSelectionScreen({ onStartTest, onBack }: UserSelectionScreen
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
   const [isWeekDropdownOpen, setIsWeekDropdownOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isStarting, setIsStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // 데이터 로딩
@@ -45,9 +46,41 @@ export function UserSelectionScreen({ onStartTest, onBack }: UserSelectionScreen
     fetchData()
   }, [])
 
-  const handleStart = () => {
-    if (selectedUserId && selectedWeekId) {
-      onStartTest(selectedUserId, selectedWeekId)
+  const handleStart = async () => {
+    if (!selectedUserId || !selectedWeekId) return
+
+    try {
+      setIsStarting(true)
+      setError(null)
+
+      // 1. 주차별 단어 목록 가져오기
+      const wordsData = await testWeeksAPI.getTestWeekWords(selectedWeekId)
+
+      // 2. 시험 시작 API 호출
+      const testStartData = await testsAPI.startTest({
+        u_id: selectedUserId,
+        twi_id: selectedWeekId,
+      })
+
+      // 3. 선택한 사용자와 주차 정보
+      const selectedUserData = users.find((u) => u.u_id === selectedUserId)
+      const selectedWeekData = testWeeks.find((w) => w.twi_id === selectedWeekId)
+
+      if (!selectedUserData || !selectedWeekData) {
+        throw new Error("사용자 또는 주차 정보를 찾을 수 없습니다.")
+      }
+
+      // 4. TestScreen으로 이동
+      onStartTest(
+        testStartData.tr_id,
+        wordsData.words,
+        selectedUserData.username,
+        selectedWeekData.name
+      )
+    } catch (err) {
+      console.error("Failed to start test:", err)
+      setError("테스트 시작에 실패했습니다. 다시 시도해주세요.")
+      setIsStarting(false)
     }
   }
 
@@ -198,15 +231,15 @@ export function UserSelectionScreen({ onStartTest, onBack }: UserSelectionScreen
         {/* 테스트 시작하기 버튼 */}
         <button
           onClick={handleStart}
-          disabled={!selectedUserId || !selectedWeekId}
+          disabled={!selectedUserId || !selectedWeekId || isStarting}
           className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-bold text-lg transition-all duration-200 ${
-            selectedUserId && selectedWeekId
+            selectedUserId && selectedWeekId && !isStarting
               ? "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] shadow-lg"
               : "bg-muted text-muted-foreground cursor-not-allowed"
           }`}
         >
-          <span>테스트 시작하기</span>
-          <ChevronRight className="w-6 h-6" />
+          <span>{isStarting ? "시작 중..." : "테스트 시작하기"}</span>
+          {!isStarting && <ChevronRight className="w-6 h-6" />}
         </button>
       </div>
     </div>
