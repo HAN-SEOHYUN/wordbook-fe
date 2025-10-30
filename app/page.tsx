@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react"
 import { WordListScreen } from "@/components/word-list-screen"
 import { FlashcardScreen } from "@/components/flashcard-screen"
+import { UserSelectionScreen } from "@/components/user-selection-screen"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
 import { vocabularyResponsesToWords } from "@/lib/utils"
 import type { Word } from "@/types/vocabulary"
 
 export default function Home() {
-  const [currentView, setCurrentView] = useState<"list" | "flashcard">("list")
+  const [currentView, setCurrentView] = useState<"list" | "flashcard" | "userSelection">("list")
   const [selectedWordIndex, setSelectedWordIndex] = useState(0)
   const [availableDates, setAvailableDates] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState<string>("")
@@ -77,8 +78,7 @@ export default function Home() {
   }, [selectedDate])
 
   const handleStartTest = () => {
-    // TODO: 나중에 사용자 선택 화면으로 이동
-    console.log("테스트 시작!")
+    setCurrentView("userSelection")
   }
 
   const handleWordSelect = (index: number) => {
@@ -88,6 +88,15 @@ export default function Home() {
 
   const handleBackToList = () => {
     setCurrentView("list")
+  }
+
+  const handleBackFromUserSelection = () => {
+    setCurrentView("list")
+  }
+
+  const handleUserSelectionComplete = (userId: number, weekId: number) => {
+    // TODO: TestScreen으로 이동 (다음 단계)
+    console.log("테스트 시작:", { userId, weekId })
   }
 
   const handleDateChange = (date: string) => {
@@ -141,9 +150,11 @@ export default function Home() {
           onWordUpdate={handleWordUpdate}
           onStartTest={handleStartTest}
         />
-      ) : (
+      ) : currentView === "flashcard" ? (
         <FlashcardScreen words={currentVocabulary} initialIndex={selectedWordIndex} onBack={handleBackToList} />
-      )}
+      ) : currentView === "userSelection" ? (
+        <UserSelectionScreen onStartTest={handleUserSelectionComplete} onBack={handleBackFromUserSelection} />
+      ) : null}
     </main>
   )
 }

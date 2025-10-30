@@ -135,7 +135,7 @@ export function WordListScreen({
       })
 
       const newWord: Word = {
-        id: response.id,
+        id: response.wb_id,
         english: response.english_word,
         korean: response.korean_meaning,
       }
