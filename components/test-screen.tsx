@@ -3,14 +3,14 @@
 import { useState } from "react"
 import { Check } from "lucide-react"
 import { testsAPI } from "@/lib/api"
-import type { TestWeekWord, AnswerItem } from "@/types/test"
+import type { TestWeekWord, AnswerItem, TestSubmitResponse } from "@/types/test"
 
 interface TestScreenProps {
   trId: number
   words: TestWeekWord[]
   userName: string
   weekName: string
-  onComplete: () => void
+  onComplete: (result: TestSubmitResponse) => void
   onBack: () => void
 }
 
@@ -38,8 +38,8 @@ export function TestScreen({ trId, words, userName, weekName, onComplete, onBack
         user_answer: userAnswers[word.tw_id] || "",
       }))
 
-      await testsAPI.submitTest(trId, { answers })
-      onComplete()
+      const result = await testsAPI.submitTest(trId, { answers })
+      onComplete(result)
     } catch (err) {
       console.error("Failed to submit test:", err)
       setError("답안 제출에 실패했습니다. 다시 시도해주세요.")

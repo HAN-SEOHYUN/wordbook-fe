@@ -5,13 +5,14 @@ import { WordListScreen } from "@/components/word-list-screen"
 import { FlashcardScreen } from "@/components/flashcard-screen"
 import { UserSelectionScreen } from "@/components/user-selection-screen"
 import { TestScreen } from "@/components/test-screen"
+import { TestResultScreen } from "@/components/test-result-screen"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
 import { vocabularyResponsesToWords } from "@/lib/utils"
 import type { Word } from "@/types/vocabulary"
-import type { TestWeekWord } from "@/types/test"
+import type { TestWeekWord, TestSubmitResponse } from "@/types/test"
 
 export default function Home() {
-  const [currentView, setCurrentView] = useState<"list" | "flashcard" | "userSelection" | "test">("list")
+  const [currentView, setCurrentView] = useState<"list" | "flashcard" | "userSelection" | "test" | "result">("list")
   const [selectedWordIndex, setSelectedWordIndex] = useState(0)
   const [availableDates, setAvailableDates] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState<string>("")
@@ -25,6 +26,7 @@ export default function Home() {
   const [testWords, setTestWords] = useState<TestWeekWord[]>([])
   const [testUserName, setTestUserName] = useState<string>("")
   const [testWeekName, setTestWeekName] = useState<string>("")
+  const [testResult, setTestResult] = useState<TestSubmitResponse | null>(null)
 
   // 초기 데이터 로딩: 사용 가능한 날짜 목록 가져오기
   useEffect(() => {
@@ -110,14 +112,23 @@ export default function Home() {
     setCurrentView("test")
   }
 
-  const handleTestComplete = () => {
-    // TODO: 결과 화면으로 이동 (다음 단계)
-    console.log("테스트 완료!")
-    setCurrentView("list")
+  const handleTestComplete = (result: TestSubmitResponse) => {
+    setTestResult(result)
+    setCurrentView("result")
   }
 
   const handleBackFromTest = () => {
     setCurrentView("userSelection")
+  }
+
+  const handleBackToListFromResult = () => {
+    setCurrentView("list")
+    // 상태 초기화
+    setTestResult(null)
+    setTestTrId(0)
+    setTestWords([])
+    setTestUserName("")
+    setTestWeekName("")
   }
 
   const handleDateChange = (date: string) => {
@@ -183,6 +194,13 @@ export default function Home() {
           weekName={testWeekName}
           onComplete={handleTestComplete}
           onBack={handleBackFromTest}
+        />
+      ) : currentView === "result" && testResult ? (
+        <TestResultScreen
+          result={testResult}
+          userName={testUserName}
+          weekName={testWeekName}
+          onBackToList={handleBackToListFromResult}
         />
       ) : null}
     </main>
