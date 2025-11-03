@@ -3,7 +3,9 @@ import type {
   TestStartResponse,
   TestSubmitRequest,
   TestSubmitResponse,
-  TestAvailabilityResponse
+  TestAvailabilityResponse,
+  TestHistoryResponse,
+  TestDetailResponse
 } from '@/types/test'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
@@ -66,6 +68,42 @@ class TestsAPI {
 
     if (!response.ok) {
       throw new Error(`Failed to check test availability: ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+
+  /**
+   * 사용자의 시험 기록 히스토리 조회
+   */
+  async getTestHistory(userId: number): Promise<TestHistoryResponse> {
+    const response = await fetch(`${this.baseUrl}/api/v1/tests/history?u_id=${userId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to get test history: ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+
+  /**
+   * 특정 시험의 상세 결과 조회
+   */
+  async getTestDetail(trId: number): Promise<TestDetailResponse> {
+    const response = await fetch(`${this.baseUrl}/api/v1/tests/${trId}/detail`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to get test detail: ${response.statusText}`)
     }
 
     return response.json()

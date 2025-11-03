@@ -21,6 +21,13 @@ class UsersAPI {
 
     return response.json()
   }
+
+  /**
+   * 모든 사용자 목록 조회 (별칭)
+   */
+  async getUsers(): Promise<UserListResponse> {
+    return this.getAllUsers()
+  }
 }
 
 // 싱글톤 인스턴스 export

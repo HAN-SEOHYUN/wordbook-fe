@@ -6,14 +6,17 @@ import { FlashcardScreen } from "@/components/flashcard-screen"
 import { UserSelectionScreen } from "@/components/user-selection-screen"
 import { TestScreen } from "@/components/test-screen"
 import { TestResultScreen } from "@/components/test-result-screen"
+import { TestHistoryScreen } from "@/components/test-history-screen"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
 import { testsAPI } from "@/lib/api/tests"
 import { vocabularyResponsesToWords } from "@/lib/utils"
 import type { Word } from "@/types/vocabulary"
-import type { TestWeekWord, TestSubmitResponse, TestAvailabilityResponse } from "@/types/test"
+import type { TestWeekWord, TestSubmitResponse, TestAvailabilityResponse, User } from "@/types/test"
+import { usersAPI } from "@/lib/api/users"
 
 export default function Home() {
-  const [currentView, setCurrentView] = useState<"list" | "flashcard" | "userSelection" | "test" | "result">("list")
+  const [currentView, setCurrentView] = useState<"list" | "flashcard" | "userSelection" | "test" | "result" | "history">("list")
+  const [users, setUsers] = useState<User[]>([])
   const [selectedWordIndex, setSelectedWordIndex] = useState(0)
   const [availableDates, setAvailableDates] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState<string>("")
@@ -31,6 +34,20 @@ export default function Home() {
 
   // 시험 가능 여부 상태
   const [testAvailability, setTestAvailability] = useState<TestAvailabilityResponse | null>(null)
+
+  // 사용자 목록 로딩
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await usersAPI.getUsers()
+        setUsers(response.users)
+      } catch (err) {
+        console.error("Failed to fetch users:", err)
+      }
+    }
+
+    fetchUsers()
+  }, [])
 
   // 시험 가능 여부 체크
   useEffect(() => {
@@ -162,6 +179,14 @@ export default function Home() {
     setCurrentVocabulary(updatedWords)
   }
 
+  const handleViewHistory = () => {
+    setCurrentView("history")
+  }
+
+  const handleBackFromHistory = () => {
+    setCurrentView("list")
+  }
+
   // 로딩 중이거나 에러가 있을 때
   if (isLoading && availableDates.length === 0) {
     return (
@@ -205,7 +230,10 @@ export default function Home() {
           onWordUpdate={handleWordUpdate}
           onStartTest={handleStartTest}
           testAvailability={testAvailability}
+          onViewHistory={handleViewHistory}
         />
+      ) : currentView === "history" ? (
+        <TestHistoryScreen onBack={handleBackFromHistory} users={users} />
       ) : currentView === "flashcard" ? (
         <FlashcardScreen words={currentVocabulary} initialIndex={selectedWordIndex} onBack={handleBackToList} />
       ) : currentView === "userSelection" ? (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { ChevronRight, ExternalLink, Pencil, Check, X, Plus, Volume2, EyeOff, Eye, Trophy } from "lucide-react"
+import { ChevronRight, ExternalLink, Pencil, Check, X, Plus, Volume2, EyeOff, Eye, Trophy, History } from "lucide-react"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
 import type { TestAvailabilityResponse } from "@/types/test"
 
@@ -24,6 +24,7 @@ interface WordListScreenProps {
   onWordUpdate?: (updatedWords: Word[]) => void
   onStartTest: () => void
   testAvailability: TestAvailabilityResponse | null
+  onViewHistory: () => void
 }
 
 export function WordListScreen({
@@ -38,6 +39,7 @@ export function WordListScreen({
   onWordUpdate,
   onStartTest,
   testAvailability,
+  onViewHistory,
 }: WordListScreenProps) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editEnglish, setEditEnglish] = useState("")
@@ -184,6 +186,13 @@ export function WordListScreen({
               <p className="text-sm text-muted-foreground">{selectedDate ? formatDate(selectedDate) : "날짜를 선택하세요"}</p>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={onViewHistory}
+                className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-muted text-muted-foreground hover:bg-muted/80 rounded-full transition-all active:scale-95 shadow-sm"
+              >
+                <History className="w-3.5 h-3.5" />
+                <span className="whitespace-nowrap">기록</span>
+              </button>
               <button
                 onClick={() => setIsTestMode(!isTestMode)}
                 className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full transition-all active:scale-95 shadow-sm ${

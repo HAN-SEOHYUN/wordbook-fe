@@ -114,3 +114,49 @@ export interface TestAvailabilityResponse {
   remaining_minutes?: number
   next_test_datetime?: string // YYYY-MM-DD HH:MM:SS
 }
+
+// ============================================================
+// Test History Types
+// ============================================================
+export interface TestHistoryItem {
+  tr_id: number
+  u_id: number
+  twi_id: number
+  test_score: number
+  created_at: string
+  updated_at: string
+  week_name: string
+  start_date: string // YYYY-MM-DD
+  end_date: string // YYYY-MM-DD
+  test_date: string // YYYY-MM-DD
+  total_questions: number
+  correct_count: number
+}
+
+export interface TestHistoryResponse {
+  user_id: number
+  username: string
+  test_history: TestHistoryItem[]
+}
+
+export interface TestAnswerDetail {
+  ta_id: number
+  tw_id: number
+  word_english: string
+  word_meaning: string
+  user_answer: string
+  is_correct: boolean
+}
+
+export interface TestDetailResponse {
+  tr_id: number
+  u_id: number
+  username: string
+  twi_id: number
+  week_name: string
+  test_score: number
+  test_date: string
+  total_questions: number
+  correct_count: number
+  answers: TestAnswerDetail[]
+}
