@@ -9,6 +9,7 @@ import { TestResultScreen } from "@/components/test-result-screen"
 import { TestHistoryScreen } from "@/components/test-history-screen"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
 import { testsAPI } from "@/lib/api/tests"
+import { testWeeksAPI } from "@/lib/api/test-weeks"
 import { vocabularyResponsesToWords } from "@/lib/utils"
 import type { Word } from "@/types/vocabulary"
 import type { TestWeekWord, TestSubmitResponse, TestAvailabilityResponse, User } from "@/types/test"
@@ -187,6 +188,44 @@ export default function Home() {
     setCurrentView("list")
   }
 
+  const handleRetestFromHistory = async (twiId: number, userId: number) => {
+    try {
+      console.log(`[재시험] 시작 - twi_id: ${twiId}, u_id: ${userId}`)
+
+      // 1. 주차별 단어 목록 가져오기
+      const wordsData = await testWeeksAPI.getTestWeekWords(twiId)
+
+      // 2. 시험 시작 API 호출
+      const testStartData = await testsAPI.startTest({
+        u_id: userId,
+        twi_id: twiId,
+      })
+
+      // 3. 선택한 사용자와 주차 정보
+      const selectedUserData = users.find((u) => u.u_id === userId)
+
+      if (!selectedUserData) {
+        throw new Error("사용자 정보를 찾을 수 없습니다.")
+      }
+
+      // 주차 정보는 wordsData에 포함되어 있을 수 있음
+      // 또는 별도로 조회해야 할 수 있음
+      const weekName = wordsData.week_name || `주차 ${twiId}`
+
+      // 4. TestScreen으로 이동
+      setTestTrId(testStartData.tr_id)
+      setTestWords(wordsData.words)
+      setTestUserName(selectedUserData.username)
+      setTestWeekName(weekName)
+      setCurrentView("test")
+
+      console.log(`[재시험] 성공 - tr_id: ${testStartData.tr_id}`)
+    } catch (err) {
+      console.error("Failed to start retest:", err)
+      alert("재시험 시작에 실패했습니다. 다시 시도해주세요.")
+    }
+  }
+
   // 로딩 중이거나 에러가 있을 때
   if (isLoading && availableDates.length === 0) {
     return (
@@ -233,7 +272,7 @@ export default function Home() {
           onViewHistory={handleViewHistory}
         />
       ) : currentView === "history" ? (
-        <TestHistoryScreen onBack={handleBackFromHistory} users={users} />
+        <TestHistoryScreen onBack={handleBackFromHistory} users={users} onStartTest={handleRetestFromHistory} />
       ) : currentView === "flashcard" ? (
         <FlashcardScreen words={currentVocabulary} initialIndex={selectedWordIndex} onBack={handleBackToList} />
       ) : currentView === "userSelection" ? (

@@ -108,6 +108,22 @@ class TestsAPI {
 
     return response.json()
   }
+
+  /**
+   * 시험 기록 삭제 (재시험을 위한)
+   */
+  async deleteTest(trId: number): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/api/v1/tests/${trId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete test: ${response.statusText}`)
+    }
+  }
 }
 
 // 싱글톤 인스턴스 export
