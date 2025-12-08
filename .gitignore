@@ -52,4 +52,6 @@ Thumbs.db
 logs
 *.log
 
-/ref
+# Reference/Backup directories
+ref/
+.cursor/
