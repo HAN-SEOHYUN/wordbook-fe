@@ -12,7 +12,7 @@ import { testsAPI } from "@/lib/api/tests"
 import { testWeeksAPI } from "@/lib/api/test-weeks"
 import { vocabularyResponsesToWords } from "@/lib/utils"
 import type { Word } from "@/types/vocabulary"
-import type { TestWeekWord, TestSubmitResponse, TestAvailabilityResponse, User } from "@/types/test"
+import type { TestWeekWord, TestSubmitResponse, TestAvailabilityResponse, User, TestWeek } from "@/types/test"
 import { usersAPI } from "@/lib/api/users"
 
 export default function Home() {
@@ -35,6 +35,10 @@ export default function Home() {
 
   // 시험 가능 여부 상태
   const [testAvailability, setTestAvailability] = useState<TestAvailabilityResponse | null>(null)
+
+  // 주차 관련 상태
+  const [availableWeeks, setAvailableWeeks] = useState<TestWeek[]>([])
+  const [selectedWeekId, setSelectedWeekId] = useState<number | null>(null)
 
   // 사용자 목록 로딩
   useEffect(() => {
@@ -67,6 +71,21 @@ export default function Home() {
     const interval = setInterval(checkTestAvailability, 60000)
 
     return () => clearInterval(interval)
+  }, [])
+
+  // 주차 목록 로딩
+  useEffect(() => {
+    const fetchTestWeeks = async () => {
+      try {
+        const response = await testWeeksAPI.getTestWeeks(10, "desc")
+        setAvailableWeeks(response.weeks)
+      } catch (err) {
+        console.error("Failed to fetch test weeks:", err)
+        // 주차 목록 로딩 실패 시에도 앱은 정상 작동 (날짜 탭만 사용)
+      }
+    }
+
+    fetchTestWeeks()
   }, [])
 
   // 초기 데이터 로딩: 사용 가능한 날짜 목록 가져오기
@@ -134,6 +153,18 @@ export default function Home() {
     fetchVocabulary()
   }, [selectedDate])
 
+  // 날짜 선택 시 해당 주차 자동 하이라이트
+  useEffect(() => {
+    if (!selectedDate || availableWeeks.length === 0) return
+
+    const week = findWeekByDate(selectedDate, availableWeeks)
+    if (week) {
+      setSelectedWeekId(week.twi_id)
+    } else {
+      setSelectedWeekId(null)
+    }
+  }, [selectedDate, availableWeeks])
+
   const handleStartTest = () => {
     setCurrentView("userSelection")
   }
@@ -180,6 +211,27 @@ export default function Home() {
 
   const handleDateChange = (date: string) => {
     setSelectedDate(date)
+  }
+
+  // 날짜-주차 매핑 유틸리티 함수
+  const findWeekByDate = (date: string, weeks: TestWeek[]): TestWeek | null => {
+    return weeks.find(week => 
+      date >= week.start_date && date <= week.end_date
+    ) || null
+  }
+
+  // 주차 선택 핸들러
+  const handleWeekSelect = (week: TestWeek) => {
+    setSelectedWeekId(week.twi_id)
+    // 주차 내에서 가장 최근(가장 빠른) 날짜를 선택
+    const weekDates = availableDates.filter(
+      (date) => date >= week.start_date && date <= week.end_date
+    )
+    const targetDate =
+      weekDates.length > 0
+        ? weekDates.reduce((latest, current) => (current > latest ? current : latest))
+        : week.start_date
+    setSelectedDate(targetDate)
   }
 
   const handleWordUpdate = (updatedWords: Word[]) => {
@@ -276,6 +328,9 @@ export default function Home() {
           onStartTest={handleStartTest}
           testAvailability={testAvailability}
           onViewHistory={handleViewHistory}
+          availableWeeks={availableWeeks}
+          selectedWeekId={selectedWeekId}
+          onWeekSelect={handleWeekSelect}
         />
       ) : currentView === "history" ? (
         <TestHistoryScreen onBack={handleBackFromHistory} users={users} onStartTest={handleRetestFromHistory} />

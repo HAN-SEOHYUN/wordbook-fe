@@ -17,7 +17,7 @@ import {
 } from "lucide-react"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
 import type { Word } from "@/types/vocabulary"
-import type { TestAvailabilityResponse } from "@/types/test"
+import type { TestAvailabilityResponse, TestWeek } from "@/types/test"
 
 interface WordListScreenProps {
   words: Word[]
@@ -32,6 +32,9 @@ interface WordListScreenProps {
   onStartTest: () => void
   testAvailability?: TestAvailabilityResponse | null
   onViewHistory: () => void
+  availableWeeks: TestWeek[]
+  selectedWeekId: number | null
+  onWeekSelect: (week: TestWeek) => void
 }
 
 export function WordListScreen({
@@ -47,6 +50,9 @@ export function WordListScreen({
   onStartTest,
   testAvailability,
   onViewHistory,
+  availableWeeks,
+  selectedWeekId,
+  onWeekSelect,
 }: WordListScreenProps) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editEnglish, setEditEnglish] = useState("")
@@ -257,30 +263,66 @@ export function WordListScreen({
       )}
 
       {!isTestMode && (
-        <div className="sticky top-[88px] z-10 bg-background/98 backdrop-blur-md border-b border-border shadow-sm">
-          <div className="overflow-x-auto scrollbar-hide">
-            <div className="flex gap-2 px-5 py-3 min-w-max">
-              {availableDates.map((date) => {
-                const isSelected = date === selectedDate
-                return (
-                  <button
-                    key={date}
-                    onClick={() => onDateChange(date)}
-                    className={`
-                      relative px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 whitespace-nowrap
-                      ${isSelected
-                        ? "bg-primary text-primary-foreground shadow-lg scale-105"
-                        : "bg-muted/80 text-muted-foreground hover:bg-muted active:scale-95"
-                      }
-                    `}
-                  >
-                    {formatDate(date).replace(/년|월/g, ".").replace("일", "")}
-                  </button>
-                )
-              })}
+        <>
+          {/* 주차 선택 영역 */}
+          <div className="sticky top-[88px] z-10 bg-background/98 backdrop-blur-md border-b border-border shadow-sm">
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 px-5 py-3 min-w-max">
+                {availableWeeks
+                  .filter((week) => {
+                    // 해당 주차 범위 내에 단어가 있는 날짜가 있는지 확인
+                    return availableDates.some(
+                      (date) => date >= week.start_date && date <= week.end_date
+                    )
+                  })
+                  .map((week) => {
+                    const isSelected = selectedWeekId === week.twi_id
+                    return (
+                      <button
+                        key={week.twi_id}
+                        onClick={() => onWeekSelect(week)}
+                        className={`
+                          relative px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 whitespace-nowrap
+                          ${isSelected
+                            ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                            : "bg-muted/80 text-muted-foreground hover:bg-muted active:scale-95"
+                          }
+                        `}
+                      >
+                        {week.name}
+                      </button>
+                    )
+                  })}
+              </div>
             </div>
           </div>
-        </div>
+
+          {/* 날짜 선택 영역 */}
+          <div className="sticky top-[148px] z-10 bg-background/98 backdrop-blur-md border-b border-border shadow-sm">
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 px-5 py-3 min-w-max">
+                {availableDates.map((date) => {
+                  const isSelected = date === selectedDate
+                  return (
+                    <button
+                      key={date}
+                      onClick={() => onDateChange(date)}
+                      className={`
+                        relative px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 whitespace-nowrap
+                        ${isSelected
+                          ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                          : "bg-muted/80 text-muted-foreground hover:bg-muted active:scale-95"
+                        }
+                      `}
+                    >
+                      {formatDate(date).replace(/년|월/g, ".").replace("일", "")}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Loading State */}
