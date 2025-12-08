@@ -1,4 +1,43 @@
-selectedDate,
+"use client"
+
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import {
+  History,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  Trophy,
+  X,
+  Check,
+  Pencil,
+  Volume2,
+  ChevronRight,
+  Plus,
+} from "lucide-react"
+import { vocabularyAPI } from "@/lib/api/vocabulary"
+import type { Word } from "@/types/vocabulary"
+import type { TestAvailabilityResponse } from "@/types/test"
+
+interface WordListScreenProps {
+  words: Word[]
+  onWordSelect: (index: number) => void
+  selectedDate: string
+  availableDates: string[]
+  onDateChange: (date: string) => void
+  currentLink?: string
+  isLoading?: boolean
+  error?: string | null
+  onWordUpdate?: (words: Word[]) => void
+  onStartTest: () => void
+  testAvailability?: TestAvailabilityResponse | null
+  onViewHistory: () => void
+}
+
+export function WordListScreen({
+  words,
+  onWordSelect,
+  selectedDate,
   availableDates,
   onDateChange,
   currentLink = "",

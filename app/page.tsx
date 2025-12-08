@@ -87,7 +87,13 @@ export default function Home() {
         setSelectedDate(dates[0]) // 가장 최신 날짜를 기본으로 선택
       } catch (err) {
         console.error("Failed to fetch available dates:", err)
-        setError("날짜 목록을 불러오는데 실패했습니다.")
+        // 오류 메시지에서 백엔드 오류 정보 추출
+        const errorMessage = err instanceof Error ? err.message : String(err)
+        if (errorMessage.includes("START_DATE")) {
+          setError("백엔드 데이터베이스 오류: 'START_DATE' 컬럼을 찾을 수 없습니다. 백엔드 개발자에게 문의하세요.")
+        } else {
+          setError(`날짜 목록을 불러오는데 실패했습니다: ${errorMessage}`)
+        }
       } finally {
         setIsLoading(false)
       }

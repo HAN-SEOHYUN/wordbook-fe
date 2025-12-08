@@ -13,13 +13,39 @@ class VocabularyAPI {
    * 사용 가능한 날짜 목록 조회 (최신순 5개)
    */
   async getAvailableDates(): Promise<string[]> {
-    const response = await fetch(`${this.baseUrl}/api/v1/vocabulary/dates`)
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch available dates: ${response.statusText}`)
+    try {
+      const response = await fetch(`${this.baseUrl}/api/v1/vocabulary/dates`)
+      
+      if (!response.ok) {
+        // 응답 본문에서 상세 오류 메시지 추출 시도
+        let errorMessage = `Failed to fetch available dates: ${response.status} ${response.statusText}`
+        try {
+          const errorData = await response.json()
+          if (errorData.detail || errorData.message) {
+            errorMessage += ` - ${errorData.detail || errorData.message}`
+          }
+        } catch {
+          // JSON 파싱 실패 시 텍스트로 시도
+          try {
+            const errorText = await response.text()
+            if (errorText) {
+              errorMessage += ` - ${errorText}`
+            }
+          } catch {
+            // 무시
+          }
+        }
+        throw new Error(errorMessage)
+      }
+      
+      return response.json()
+    } catch (error) {
+      // 네트워크 오류 등 fetch 자체가 실패한 경우
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error(`Network error: 백엔드 서버(${this.baseUrl})에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.`)
+      }
+      throw error
     }
-    
-    return response.json()
   }
 
   /**
