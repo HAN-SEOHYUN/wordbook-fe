@@ -1,36 +1,4 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import { ChevronRight, ExternalLink, Pencil, Check, X, Plus, Volume2, EyeOff, Eye, Trophy, History } from "lucide-react"
-import { vocabularyAPI } from "@/lib/api/vocabulary"
-import type { TestAvailabilityResponse } from "@/types/test"
-
-interface Word {
-  id: number
-  english: string
-  korean: string
-}
-
-interface WordListScreenProps {
-  words: Word[]
-  onWordSelect: (index: number) => void
-  selectedDate: string
-  availableDates: string[]
-  onDateChange: (date: string) => void
-  currentLink?: string
-  isLoading?: boolean
-  error?: string | null
-  onWordUpdate?: (updatedWords: Word[]) => void
-  onStartTest: () => void
-  testAvailability: TestAvailabilityResponse | null
-  onViewHistory: () => void
-}
-
-export function WordListScreen({
-  words,
-  onWordSelect,
-  selectedDate,
+selectedDate,
   availableDates,
   onDateChange,
   currentLink = "",
@@ -195,11 +163,10 @@ export function WordListScreen({
               </button>
               <button
                 onClick={() => setIsTestMode(!isTestMode)}
-                className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full transition-all active:scale-95 shadow-sm ${
-                  isTestMode
+                className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full transition-all active:scale-95 shadow-sm ${isTestMode
                     ? "bg-accent text-accent-foreground hover:bg-accent/90"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
+                  }`}
               >
                 {isTestMode ? (
                   <>
@@ -262,10 +229,9 @@ export function WordListScreen({
                     onClick={() => onDateChange(date)}
                     className={`
                       relative px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 whitespace-nowrap
-                      ${
-                        isSelected
-                          ? "bg-primary text-primary-foreground shadow-lg scale-105"
-                          : "bg-muted/80 text-muted-foreground hover:bg-muted active:scale-95"
+                      ${isSelected
+                        ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                        : "bg-muted/80 text-muted-foreground hover:bg-muted active:scale-95"
                       }
                     `}
                   >
@@ -353,115 +319,115 @@ export function WordListScreen({
                     key={word.id}
                     className="w-full bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-200 hover:border-primary/30"
                   >
-                  {isEditing ? (
-                    <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                          {index + 1}
-                        </span>
-                        <span className="text-sm font-semibold text-muted-foreground">수정 중</span>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">영어</label>
-                          <input
-                            type="text"
-                            value={editEnglish}
-                            onChange={(e) => setEditEnglish(e.target.value)}
-                            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                            placeholder="영어 단어 또는 구문"
-                          />
+                    {isEditing ? (
+                      <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                            {index + 1}
+                          </span>
+                          <span className="text-sm font-semibold text-muted-foreground">수정 중</span>
                         </div>
 
-                        <div>
-                          <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
-                          <input
-                            type="text"
-                            value={editKorean}
-                            onChange={(e) => setEditKorean(e.target.value)}
-                            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                            placeholder="한국어 뜻"
-                          />
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">영어</label>
+                            <input
+                              type="text"
+                              value={editEnglish}
+                              onChange={(e) => setEditEnglish(e.target.value)}
+                              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                              placeholder="영어 단어 또는 구문"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
+                            <input
+                              type="text"
+                              value={editKorean}
+                              onChange={(e) => setEditKorean(e.target.value)}
+                              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                              placeholder="한국어 뜻"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={saveEdit}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm"
+                          >
+                            <Check className="w-4 h-4" />
+                            저장
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-muted text-muted-foreground rounded-xl font-semibold text-sm hover:bg-muted/80 active:scale-[0.98] transition-all"
+                          >
+                            <X className="w-4 h-4" />
+                            취소
+                          </button>
                         </div>
                       </div>
-
-                      <div className="flex gap-2 pt-2">
-                        <button
-                          onClick={saveEdit}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 active:scale-[0.98] transition-all shadow-sm"
-                        >
-                          <Check className="w-4 h-4" />
-                          저장
-                        </button>
-                        <button
-                          onClick={cancelEdit}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-muted text-muted-foreground rounded-xl font-semibold text-sm hover:bg-muted/80 active:scale-[0.98] transition-all"
-                        >
-                          <X className="w-4 h-4" />
-                          취소
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-full group">
-                      <div className="flex items-start justify-between gap-4">
-                        <div
-                          className="flex-1 min-w-0 cursor-pointer"
-                          onClick={() => onWordSelect(index)}
-                        >
-                          <div className="flex items-center gap-3 mb-3">
-                            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                              {index + 1}
-                            </span>
+                    ) : (
+                      <div className="w-full group">
+                        <div className="flex items-start justify-between gap-4">
+                          <div
+                            className="flex-1 min-w-0 cursor-pointer"
+                            onClick={() => onWordSelect(index)}
+                          >
+                            <div className="flex items-center gap-3 mb-3">
+                              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                                {index + 1}
+                              </span>
+                              {isTestMode ? (
+                                <div className="flex-1 h-7 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse" />
+                              ) : (
+                                <h3 className="text-xl font-bold text-foreground tracking-wide leading-tight">
+                                  {word.english}
+                                </h3>
+                              )}
+                            </div>
+                            <div className="h-px bg-gradient-to-r from-border to-transparent mb-3" />
                             {isTestMode ? (
-                              <div className="flex-1 h-7 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse" />
+                              <div className="pl-10 space-y-2">
+                                <div className="h-5 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse w-3/4" />
+                                <div className="h-5 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse w-1/2" />
+                              </div>
                             ) : (
-                              <h3 className="text-xl font-bold text-foreground tracking-wide leading-tight">
-                                {word.english}
-                              </h3>
+                              <p className="text-base text-muted-foreground leading-relaxed pl-10">{word.korean}</p>
                             )}
                           </div>
-                          <div className="h-px bg-gradient-to-r from-border to-transparent mb-3" />
-                          {isTestMode ? (
-                            <div className="pl-10 space-y-2">
-                              <div className="h-5 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse w-3/4" />
-                              <div className="h-5 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse w-1/2" />
-                            </div>
-                          ) : (
-                            <p className="text-base text-muted-foreground leading-relaxed pl-10">{word.korean}</p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0 mt-1">
-                          {!isTestMode && (
-                            <>
-                              <button
-                                onClick={(e) => speakEnglish(word.english, e)}
-                                className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95"
-                                aria-label="발음 듣기"
-                                title="영어 발음 듣기"
-                              >
-                                <Volume2 className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={(e) => startEdit(word, e)}
-                                className="p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all active:scale-95"
-                                aria-label="수정"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </button>
-                            </>
-                          )}
-                          {!isTestMode && (
-                            <ChevronRight className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all cursor-pointer" onClick={() => onWordSelect(index)} />
-                          )}
+                          <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+                            {!isTestMode && (
+                              <>
+                                <button
+                                  onClick={(e) => speakEnglish(word.english, e)}
+                                  className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95"
+                                  aria-label="발음 듣기"
+                                  title="영어 발음 듣기"
+                                >
+                                  <Volume2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={(e) => startEdit(word, e)}
+                                  className="p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all active:scale-95"
+                                  aria-label="수정"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                            {!isTestMode && (
+                              <ChevronRight className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all cursor-pointer" onClick={() => onWordSelect(index)} />
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )
-            })
+                    )}
+                  </div>
+                )
+              })
             )}
           </div>
 
@@ -621,11 +587,10 @@ export function WordListScreen({
       {toast && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
           <div
-            className={`px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-md border ${
-              toast.type === "success"
+            className={`px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-md border ${toast.type === "success"
                 ? "bg-accent/95 border-accent text-accent-foreground"
                 : "bg-destructive/95 border-destructive text-destructive-foreground"
-            }`}
+              }`}
           >
             <p className="font-semibold text-sm">{toast.message}</p>
           </div>
