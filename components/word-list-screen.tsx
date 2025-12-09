@@ -209,8 +209,8 @@ export function WordListScreen({
               <button
                 onClick={() => setIsTestMode(!isTestMode)}
                 className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full transition-all active:scale-95 shadow-sm ${isTestMode
-                    ? "bg-accent text-accent-foreground hover:bg-accent/90"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  ? "bg-accent text-accent-foreground hover:bg-accent/90"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }`}
               >
                 {isTestMode ? (
@@ -265,9 +265,10 @@ export function WordListScreen({
       {!isTestMode && (
         <>
           {/* 주차 선택 영역 */}
-          <div className="sticky top-[88px] z-10 bg-background/98 backdrop-blur-md border-b border-border shadow-sm">
+          {/* 주차 선택 영역 */}
+          <div className="sticky top-[88px] z-10 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
             <div className="overflow-x-auto scrollbar-hide">
-              <div className="flex gap-2 px-5 py-3 min-w-max">
+              <div className="flex px-4 min-w-max">
                 {availableWeeks
                   .filter((week) => {
                     // 해당 주차 범위 내에 단어가 있는 날짜가 있는지 확인
@@ -282,10 +283,10 @@ export function WordListScreen({
                         key={week.twi_id}
                         onClick={() => onWeekSelect(week)}
                         className={`
-                          relative px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 whitespace-nowrap
+                          relative px-6 py-3.5 font-bold text-sm transition-all duration-200 whitespace-nowrap border-b-2 outline-none
                           ${isSelected
-                            ? "bg-primary text-primary-foreground shadow-lg scale-105"
-                            : "bg-muted/80 text-muted-foreground hover:bg-muted active:scale-95"
+                            ? "border-primary text-primary"
+                            : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
                           }
                         `}
                       >
@@ -669,8 +670,8 @@ export function WordListScreen({
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
           <div
             className={`px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-md border ${toast.type === "success"
-                ? "bg-accent/95 border-accent text-accent-foreground"
-                : "bg-destructive/95 border-destructive text-destructive-foreground"
+              ? "bg-accent/95 border-accent text-accent-foreground"
+              : "bg-destructive/95 border-destructive text-destructive-foreground"
               }`}
           >
             <p className="font-semibold text-sm">{toast.message}</p>
