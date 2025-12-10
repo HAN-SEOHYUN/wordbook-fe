@@ -54,4 +54,4 @@ logs
 
 # Reference/Backup directories
 ref/
-.cursor/
+.cursor/*
