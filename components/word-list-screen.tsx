@@ -573,49 +573,40 @@ export function WordListScreen({
                               <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
                                 {index + 1}
                               </span>
-                              {isTestMode ? (
-                                <div className="flex-1 h-7 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse" />
-                              ) : (
-                                <h3 className="text-xl font-bold text-foreground tracking-wide leading-tight">
-                                  {word.english}
-                                </h3>
-                              )}
+                              <h3 className="text-xl font-bold text-foreground tracking-wide leading-tight">
+                                {word.english}
+                              </h3>
                             </div>
-                            <div className="h-px bg-gradient-to-r from-border to-transparent mb-3" />
-                            {isTestMode ? (
-                              <div className="pl-10 space-y-2">
-                                <div className="h-5 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse w-3/4" />
-                                <div className="h-5 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse w-1/2" />
-                              </div>
-                            ) : (
-                              <p className="text-base text-muted-foreground leading-relaxed pl-10">{word.korean}</p>
-                            )}
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0 mt-1">
-                            {!isTestMode && (
-                              <>
-                                <button
-                                  onClick={(e) => speakEnglish(word.english, e)}
-                                  className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95"
-                                  aria-label="발음 듣기"
-                                  title="영어 발음 듣기"
-                                >
-                                  <Volume2 className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={(e) => startEdit(word, e)}
-                                  className="p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all active:scale-95"
-                                  aria-label="수정"
-                                >
-                                  <Pencil className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
-                            {!isTestMode && (
-                              <ChevronRight className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all cursor-pointer" onClick={() => onWordSelect(index)} />
-                            )}
+                            <button
+                              onClick={(e) => speakEnglish(word.english, e)}
+                              className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95"
+                              aria-label="발음 듣기"
+                              title="영어 발음 듣기"
+                            >
+                              <Volume2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => startEdit(word, e)}
+                              className="p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all active:scale-95"
+                              aria-label="수정"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <ChevronRight
+                              className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all cursor-pointer"
+                              onClick={() => onWordSelect(index)}
+                            />
                           </div>
                         </div>
+                        <div className="h-px bg-gradient-to-r from-border to-transparent mt-2 mb-3" />
+                        <p
+                          className="text-base text-muted-foreground leading-relaxed pl-10 break-words cursor-pointer"
+                          onClick={() => onWordSelect(index)}
+                        >
+                          {word.korean}
+                        </p>
                       </div>
                     )}
                   </div>
