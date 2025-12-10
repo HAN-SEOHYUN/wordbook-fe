@@ -60,7 +60,7 @@ export function WordListScreen({
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editEnglish, setEditEnglish] = useState("")
   const [editKorean, setEditKorean] = useState("")
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null)
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [newEnglish, setNewEnglish] = useState("")
   const [newKorean, setNewKorean] = useState("")
@@ -75,9 +75,14 @@ export function WordListScreen({
     }
   }, [testAvailability])
 
-  const showToast = (message: string, type: "success" | "error") => {
+  const showToast = (message: string, type: "success" | "error" | "info") => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
+  }
+
+  const handleStartTestClick = () => {
+    showToast("🚧 단어 테스트 기능은 더 멋진 모습으로 찾아뵙기 위해 준비 중이에요! 조금만 기다려주세요.", "info")
+    // onStartTest() // 기능 준비 완료 시 주석 해제
   }
 
   const speakEnglish = async (text: string, e: MouseEvent) => {
@@ -458,7 +463,7 @@ export function WordListScreen({
           {isTestMode && (
             <div className="px-5 pt-6 pb-2 max-w-2xl mx-auto">
               <button
-                onClick={onStartTest}
+                onClick={handleStartTestClick}
                 className="relative w-full bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-400 text-white rounded-3xl p-8 hover:from-yellow-500 hover:via-amber-600 hover:to-orange-500 active:scale-[0.97] transition-all duration-300 overflow-hidden group"
               >
                 {/* Animated gradient overlay */}
@@ -777,7 +782,9 @@ export function WordListScreen({
           <div
             className={`px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-md border ${toast.type === "success"
               ? "bg-accent/95 border-accent text-accent-foreground"
-              : "bg-destructive/95 border-destructive text-destructive-foreground"
+              : toast.type === "error"
+                ? "bg-destructive/95 border-destructive text-destructive-foreground"
+                : "bg-blue-500/95 border-blue-500 text-white" // info type
               }`}
           >
             <p className="font-semibold text-sm">{toast.message}</p>
