@@ -299,7 +299,7 @@ export function WordListScreen({
           </div>
 
           {/* 날짜 선택 영역 */}
-          <div className="sticky top-[148px] z-10 bg-background/98 backdrop-blur-md border-b border-border shadow-sm">
+          <div className="sticky top-[138px] z-10 bg-background/98 backdrop-blur-md border-b border-border shadow-sm">
             <div className="overflow-x-auto scrollbar-hide">
               <div className="flex gap-2 px-5 py-3 min-w-max">
                 {availableDates.map((date) => {
