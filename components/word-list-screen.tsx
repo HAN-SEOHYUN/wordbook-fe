@@ -244,15 +244,15 @@ export function WordListScreen({
       {/* Header */}
       <header className="sticky top-0 z-10 bg-card border-b border-border shadow-sm">
         <div className="px-6 py-5">
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <div>
-              <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground mb-1">
+          <div className="flex flex-col gap-3 mb-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex-shrink-0">
+              <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground mb-1 whitespace-nowrap">
                 <Image src="/bee.png" alt="Bee" width={32} height={32} className="object-contain" />
                 Wordbook
               </h1>
               <p className="text-sm text-muted-foreground">{selectedDate ? formatDate(selectedDate) : "날짜를 선택하세요"}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end">
               <button
                 onClick={onViewHistory}
                 className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-muted text-muted-foreground hover:bg-muted/80 rounded-full transition-all active:scale-95 shadow-sm"
