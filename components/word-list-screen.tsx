@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, MouseEvent } from "react"
 import Image from "next/image"
 import {
   History,
@@ -13,6 +13,7 @@ import {
   Pencil,
   Volume2,
   ChevronRight,
+  ChevronLeft,
   Plus,
 } from "lucide-react"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
@@ -79,7 +80,7 @@ export function WordListScreen({
     setTimeout(() => setToast(null), 3000)
   }
 
-  const speakEnglish = async (text: string, e: React.MouseEvent) => {
+  const speakEnglish = async (text: string, e: MouseEvent) => {
     e.stopPropagation()
 
     try {
@@ -94,21 +95,21 @@ export function WordListScreen({
     }
   }
 
-  const startEdit = (word: Word, e: React.MouseEvent) => {
+  const startEdit = (word: Word, e: MouseEvent) => {
     e.stopPropagation()
     setEditingId(word.id)
     setEditEnglish(word.english)
     setEditKorean(word.korean)
   }
 
-  const cancelEdit = (e: React.MouseEvent) => {
+  const cancelEdit = (e: MouseEvent) => {
     e.stopPropagation()
     setEditingId(null)
     setEditEnglish("")
     setEditKorean("")
   }
 
-  const saveEdit = async (e: React.MouseEvent) => {
+  const saveEdit = async (e: MouseEvent) => {
     e.stopPropagation()
 
     if (!editEnglish.trim() || !editKorean.trim()) {
@@ -201,6 +202,37 @@ export function WordListScreen({
 
   // 현재 선택된 날짜의 주차 정보
   const selectedDateWeekInfo = getWeekInfoForDate(selectedDate)
+
+  // 날짜 리스트 스크롤 관련 상태 및 핸들러
+  const dateListRef = useRef<HTMLDivElement>(null)
+  const [showLeftArrow, setShowLeftArrow] = useState(false)
+  const [showRightArrow, setShowRightArrow] = useState(false)
+
+  const checkScrollButtons = () => {
+    if (dateListRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = dateListRef.current
+      setShowLeftArrow(scrollLeft > 0)
+      // 오차 범위를 1px 정도 두어 정확성 보정
+      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 1)
+    }
+  }
+
+  const scrollDateList = (direction: "left" | "right") => {
+    if (dateListRef.current) {
+      const scrollAmount = 200
+      dateListRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      })
+    }
+  }
+
+  // 초기 로드, 날짜 변경, 화면 크기 변경 시 스크롤 버튼 상태 체크
+  useEffect(() => {
+    checkScrollButtons()
+    window.addEventListener("resize", checkScrollButtons)
+    return () => window.removeEventListener("resize", checkScrollButtons)
+  }, [availableDates])
 
   return (
     <div className="min-h-screen pb-8">
@@ -323,42 +355,70 @@ export function WordListScreen({
 
           {/* 날짜 선택 영역 */}
           <div className="sticky top-[138px] z-10 bg-background/98 backdrop-blur-md border-b border-border shadow-sm">
-            <div className="overflow-x-auto scrollbar-hide">
-              <div className="flex gap-2 px-5 py-3 min-w-max">
-                {availableDates.map((date) => {
-                  const isSelected = date === selectedDate
-                  const weekInfo = getWeekInfoForDate(date)
-                  const isInSelectedWeek = selectedDateWeekInfo && weekInfo && selectedDateWeekInfo.week.twi_id === weekInfo.week.twi_id
+            <div className="relative group">
+              {/* 왼쪽 화살표 버튼 (PC 전용) */}
+              {availableDates.length > 0 && showLeftArrow && (
+                <button
+                  onClick={() => scrollDateList("left")}
+                  className="flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-background/90 backdrop-blur-xl shadow-lg shadow-primary/10 rounded-full border border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 group"
+                  aria-label="이전 날짜 보기"
+                >
+                  <ChevronLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-0.5" />
+                </button>
+              )}
 
-                  // 동적 스타일 생성
-                  const color = weekInfo?.color
-                  let dynamicStyle: React.CSSProperties = {}
-                  let className = "relative px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 whitespace-nowrap border-2 "
+              {/* 오른쪽 화살표 버튼 (PC 전용) */}
+              {availableDates.length > 0 && showRightArrow && (
+                <button
+                  onClick={() => scrollDateList("right")}
+                  className="flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-background/90 backdrop-blur-xl shadow-lg shadow-primary/10 rounded-full border border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 group"
+                  aria-label="다음 날짜 보기"
+                >
+                  <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                </button>
+              )}
 
-                  if (isSelected && color) {
-                    // 1. 선택된 날짜: 배경색 채움 + 흰색 글씨
-                    dynamicStyle = { backgroundColor: color, borderColor: color, color: "#ffffff" }
-                    className += "shadow-md scale-105"
-                  } else if (isInSelectedWeek && color) {
-                    // 2. 같은 주차 날짜: 테두리 + 글씨 색상 (배경 흰색)
-                    dynamicStyle = { borderColor: color, color: color }
-                    className += "bg-card hover:bg-accent/10"
-                  } else {
-                    // 3. 비활성 날짜: 회색 처리
-                    className += "border-transparent text-muted-foreground hover:bg-muted active:scale-95"
-                  }
+              <div
+                ref={dateListRef}
+                onScroll={checkScrollButtons}
+                className="overflow-x-auto scrollbar-hide scroll-smooth"
+              >
+                <div className="flex gap-2 px-5 py-3 min-w-max">
+                  {availableDates.map((date) => {
+                    const isSelected = date === selectedDate
+                    const weekInfo = getWeekInfoForDate(date)
+                    const isInSelectedWeek = selectedDateWeekInfo && weekInfo && selectedDateWeekInfo.week.twi_id === weekInfo.week.twi_id
 
-                  return (
-                    <button
-                      key={date}
-                      onClick={() => onDateChange(date)}
-                      style={dynamicStyle}
-                      className={className}
-                    >
-                      {formatDate(date).replace(/년|월/g, ".").replace("일", "")}
-                    </button>
-                  )
-                })}
+                    // 동적 스타일 생성
+                    const color = weekInfo?.color
+                    let dynamicStyle: React.CSSProperties = {}
+                    let className = "relative px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 whitespace-nowrap border-2 "
+
+                    if (isSelected && color) {
+                      // 1. 선택된 날짜: 배경색 채움 + 흰색 글씨
+                      dynamicStyle = { backgroundColor: color, borderColor: color, color: "#ffffff" }
+                      className += "shadow-md scale-105"
+                    } else if (isInSelectedWeek && color) {
+                      // 2. 같은 주차 날짜: 테두리 + 글씨 색상 (배경 흰색)
+                      dynamicStyle = { borderColor: color, color: color }
+                      className += "bg-card hover:bg-accent/10"
+                    } else {
+                      // 3. 비활성 날짜: 회색 처리
+                      className += "border-transparent text-muted-foreground hover:bg-muted active:scale-95"
+                    }
+
+                    return (
+                      <button
+                        key={date}
+                        onClick={() => onDateChange(date)}
+                        style={dynamicStyle}
+                        className={className}
+                      >
+                        {formatDate(date).replace(/년|월/g, ".").replace("일", "")}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           </div>
