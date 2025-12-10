@@ -19,6 +19,8 @@ import { vocabularyAPI } from "@/lib/api/vocabulary"
 import type { Word } from "@/types/vocabulary"
 import type { TestAvailabilityResponse, TestWeek } from "@/types/test"
 
+const PALETTE = ["#2D464A", "#E86A55", "#8B2C79"]
+
 interface WordListScreenProps {
   words: Word[]
   onWordSelect: (index: number) => void
@@ -185,6 +187,21 @@ export function WordListScreen({
     return `${date.getFullYear()}년 ${String(date.getMonth() + 1).padStart(2, "0")}월 ${String(date.getDate()).padStart(2, "0")}일`
   }
 
+  const getWeekInfoForDate = (date: string) => {
+    const weekIndex = availableWeeks.findIndex(
+      (week) => date >= week.start_date && date <= week.end_date
+    )
+    if (weekIndex === -1) return null
+    return {
+      week: availableWeeks[weekIndex],
+      index: weekIndex,
+      color: PALETTE[weekIndex % PALETTE.length],
+    }
+  }
+
+  // 현재 선택된 날짜의 주차 정보
+  const selectedDateWeekInfo = getWeekInfoForDate(selectedDate)
+
   return (
     <div className="min-h-screen pb-8">
       {/* Header */}
@@ -276,17 +293,23 @@ export function WordListScreen({
                       (date) => date >= week.start_date && date <= week.end_date
                     )
                   })
-                  .map((week) => {
+                  .map((week, index) => {
                     const isSelected = selectedWeekId === week.twi_id
+                    const color = PALETTE[index % PALETTE.length]
+
                     return (
                       <button
                         key={week.twi_id}
                         onClick={() => onWeekSelect(week)}
+                        style={{
+                          color: isSelected ? color : undefined,
+                          borderColor: isSelected ? color : "transparent",
+                        }}
                         className={`
                           relative px-6 py-3.5 font-bold text-sm transition-all duration-200 whitespace-nowrap border-b-2 outline-none
                           ${isSelected
-                            ? "border-primary text-primary"
-                            : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                            ? "" // 색상은 style로 직접 제어
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                           }
                         `}
                       >
@@ -304,17 +327,33 @@ export function WordListScreen({
               <div className="flex gap-2 px-5 py-3 min-w-max">
                 {availableDates.map((date) => {
                   const isSelected = date === selectedDate
+                  const weekInfo = getWeekInfoForDate(date)
+                  const isInSelectedWeek = selectedDateWeekInfo && weekInfo && selectedDateWeekInfo.week.twi_id === weekInfo.week.twi_id
+
+                  // 동적 스타일 생성
+                  const color = weekInfo?.color
+                  let dynamicStyle: React.CSSProperties = {}
+                  let className = "relative px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 whitespace-nowrap border-2 "
+
+                  if (isSelected && color) {
+                    // 1. 선택된 날짜: 배경색 채움 + 흰색 글씨
+                    dynamicStyle = { backgroundColor: color, borderColor: color, color: "#ffffff" }
+                    className += "shadow-md scale-105"
+                  } else if (isInSelectedWeek && color) {
+                    // 2. 같은 주차 날짜: 테두리 + 글씨 색상 (배경 흰색)
+                    dynamicStyle = { borderColor: color, color: color }
+                    className += "bg-card hover:bg-accent/10"
+                  } else {
+                    // 3. 비활성 날짜: 회색 처리
+                    className += "border-transparent text-muted-foreground hover:bg-muted active:scale-95"
+                  }
+
                   return (
                     <button
                       key={date}
                       onClick={() => onDateChange(date)}
-                      className={`
-                        relative px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 whitespace-nowrap
-                        ${isSelected
-                          ? "bg-primary text-primary-foreground shadow-lg scale-105"
-                          : "bg-muted/80 text-muted-foreground hover:bg-muted active:scale-95"
-                        }
-                      `}
+                      style={dynamicStyle}
+                      className={className}
                     >
                       {formatDate(date).replace(/년|월/g, ".").replace("일", "")}
                     </button>
