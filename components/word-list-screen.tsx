@@ -17,6 +17,7 @@ import {
   Plus,
 } from "lucide-react"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
+import { Textarea } from "@/components/ui/textarea"
 import type { Word } from "@/types/vocabulary"
 import type { TestAvailabilityResponse, TestWeek } from "@/types/test"
 
@@ -535,13 +536,14 @@ export function WordListScreen({
 
                           <div>
                             <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
-                            <input
-                              type="text"
-                              value={editKorean}
-                              onChange={(e) => setEditKorean(e.target.value)}
-                              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                              placeholder="한국어 뜻"
-                            />
+                          <Textarea
+                            autoResize
+                            maxHeight={200}
+                            value={editKorean}
+                            onChange={(e) => setEditKorean(e.target.value)}
+                            className="bg-background border border-border rounded-xl px-4 py-3 text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                            placeholder="한국어 뜻"
+                          />
                           </div>
                         </div>
 
@@ -641,11 +643,12 @@ export function WordListScreen({
 
                       <div>
                         <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
-                        <input
-                          type="text"
+                        <Textarea
+                          autoResize
+                          maxHeight={200}
                           value={newKorean}
                           onChange={(e) => setNewKorean(e.target.value)}
-                          className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                      className="bg-background border border-border rounded-xl px-4 py-3 text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                           placeholder="한국어 뜻"
                         />
                       </div>
@@ -724,11 +727,12 @@ export function WordListScreen({
 
                     <div>
                       <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
-                      <input
-                        type="text"
+                      <Textarea
+                        autoResize
+                        maxHeight={200}
                         value={newKorean}
                         onChange={(e) => setNewKorean(e.target.value)}
-                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        className="bg-background border border-border rounded-xl px-4 py-3 text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                         placeholder="한국어 뜻"
                       />
                     </div>
