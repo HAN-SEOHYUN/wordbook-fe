@@ -274,16 +274,23 @@ export function WordListScreen({
                   </>
                 )}
               </button>
-              {!isTestMode && currentLink && (
-                <a
-                  href={currentLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-full transition-all active:scale-95 shadow-sm"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span className="whitespace-nowrap">원문 보기</span>
-                </a>
+              {!isTestMode && (currentLink || isLoading) && (
+                isLoading ? (
+                  <div className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-muted-foreground/40 bg-muted/20 rounded-full shadow-sm select-none">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span className="whitespace-nowrap">원문 보기</span>
+                  </div>
+                ) : (
+                  <a
+                    href={currentLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-full transition-all active:scale-95 shadow-sm"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span className="whitespace-nowrap">원문 보기</span>
+                  </a>
+                )
               )}
             </div>
           </div>
