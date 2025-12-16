@@ -4,31 +4,43 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.98 0.01 85); /* Ivory/beige background */
-  --foreground: oklch(0.25 0.02 250); /* Dark navy text */
-  --card: oklch(1 0 0); /* White cards */
-  --card-foreground: oklch(0.25 0.02 250);
+  /* DevDay Light Mode Palette */
+  --background: oklch(0.99 0.005 260); /* Clean Cool White */
+  --foreground: oklch(0.2 0.03 260);   /* Deep Slate */
+  
+  --card: oklch(1 0 0);                /* Pure White */
+  --card-foreground: oklch(0.2 0.03 260);
+  
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.02 250);
-  --primary: oklch(0.55 0.15 220); /* Bright blue accent */
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.01 85);
-  --secondary-foreground: oklch(0.25 0.02 250);
-  --muted: oklch(0.92 0.01 85);
-  --muted-foreground: oklch(0.5 0.02 250);
-  --accent: oklch(0.6 0.12 150); /* Green accent */
-  --accent-foreground: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.03 260);
+  
+  --primary: oklch(0.55 0.2 260);      /* Vibrant Blue (#2563EB approx) */
+  --primary-foreground: oklch(1 0 0);  /* White text on blue */
+  
+  --secondary: oklch(0.96 0.01 260);   /* Very light gray/blue for secondary backgrounds */
+  --secondary-foreground: oklch(0.2 0.03 260);
+  
+  --muted: oklch(0.96 0.01 260);
+  --muted-foreground: oklch(0.55 0.02 260); /* Medium Slate */
+  
+  --accent: oklch(0.96 0.01 260);      /* Light Gray for hovers */
+  --accent-foreground: oklch(0.2 0.03 260);
+  
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.88 0.01 85);
-  --input: oklch(0.88 0.01 85);
-  --ring: oklch(0.55 0.15 220);
+  
+  --border: oklch(0.92 0.01 260);      /* Cool Gray Border */
+  --input: oklch(0.92 0.01 260);
+  --ring: oklch(0.55 0.2 260);         /* Focus ring matches primary */
+  
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
+  
+  --radius: 0.75rem; /* 12px for rounded-xl look */
+  
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
