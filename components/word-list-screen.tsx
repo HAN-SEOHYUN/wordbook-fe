@@ -529,21 +529,21 @@ export function WordListScreen({
                               type="text"
                               value={editEnglish}
                               onChange={(e) => setEditEnglish(e.target.value)}
-                              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
                               placeholder="영어 단어 또는 구문"
                             />
                           </div>
 
                           <div>
                             <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
-                          <Textarea
-                            autoResize
-                            maxHeight={200}
-                            value={editKorean}
-                            onChange={(e) => setEditKorean(e.target.value)}
-                            className="bg-background border border-border rounded-xl px-4 py-3 text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                            placeholder="한국어 뜻"
-                          />
+                            <Textarea
+                              autoResize
+                              maxHeight={200}
+                              value={editKorean}
+                              onChange={(e) => setEditKorean(e.target.value)}
+                              className="bg-background border border-border rounded-xl px-4 py-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
+                              placeholder="한국어 뜻"
+                            />
                           </div>
                         </div>
 
@@ -565,12 +565,12 @@ export function WordListScreen({
                         </div>
                       </div>
                     ) : (
-                      <div className="w-full group">
+                      <div
+                        className="w-full group cursor-pointer"
+                        onClick={() => onWordSelect(index)}
+                      >
                         <div className="flex items-start justify-between gap-4">
-                          <div
-                            className="flex-1 min-w-0 cursor-pointer"
-                            onClick={() => onWordSelect(index)}
-                          >
+                          <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-3 mb-3">
                               <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
                                 {index + 1}
@@ -597,16 +597,12 @@ export function WordListScreen({
                               <Pencil className="w-4 h-4" />
                             </button>
                             <ChevronRight
-                              className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all cursor-pointer"
-                              onClick={() => onWordSelect(index)}
+                              className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all"
                             />
                           </div>
                         </div>
                         <div className="h-px bg-gradient-to-r from-border to-transparent mt-2 mb-3" />
-                        <p
-                          className="text-base text-muted-foreground leading-relaxed pl-10 break-words cursor-pointer"
-                          onClick={() => onWordSelect(index)}
-                        >
+                        <p className="text-base text-muted-foreground leading-relaxed pl-10 break-words">
                           {word.korean}
                         </p>
                       </div>
@@ -635,7 +631,7 @@ export function WordListScreen({
                           type="text"
                           value={newEnglish}
                           onChange={(e) => setNewEnglish(e.target.value)}
-                          className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                          className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
                           placeholder="영어 단어 또는 구문"
                           autoFocus
                         />
@@ -648,7 +644,7 @@ export function WordListScreen({
                           maxHeight={200}
                           value={newKorean}
                           onChange={(e) => setNewKorean(e.target.value)}
-                      className="bg-background border border-border rounded-xl px-4 py-3 text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                          className="bg-background border border-border rounded-xl px-4 py-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
                           placeholder="한국어 뜻"
                         />
                       </div>
@@ -719,7 +715,7 @@ export function WordListScreen({
                         type="text"
                         value={newEnglish}
                         onChange={(e) => setNewEnglish(e.target.value)}
-                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
                         placeholder="영어 단어 또는 구문"
                         autoFocus
                       />
@@ -732,7 +728,7 @@ export function WordListScreen({
                         maxHeight={200}
                         value={newKorean}
                         onChange={(e) => setNewKorean(e.target.value)}
-                        className="bg-background border border-border rounded-xl px-4 py-3 text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        className="bg-background border border-border rounded-xl px-4 py-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
                         placeholder="한국어 뜻"
                       />
                     </div>
