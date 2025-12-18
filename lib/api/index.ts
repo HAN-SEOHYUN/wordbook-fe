@@ -7,16 +7,19 @@ export { vocabularyAPI } from './vocabulary'
 export { usersAPI } from './users'
 export { testWeeksAPI } from './test-weeks'
 export { testsAPI } from './tests'
+export { ttsAPI } from './tts'
 
 // 편의를 위한 통합 객체
 import { vocabularyAPI } from './vocabulary'
 import { usersAPI } from './users'
 import { testWeeksAPI } from './test-weeks'
 import { testsAPI } from './tests'
+import { ttsAPI } from './tts'
 
 export const api = {
   vocabulary: vocabularyAPI,
   users: usersAPI,
   testWeeks: testWeeksAPI,
   tests: testsAPI,
+  tts: ttsAPI,
 }

@@ -17,6 +17,7 @@ import {
   Plus,
 } from "lucide-react"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
+import { useTTS } from "@/hooks/use-tts"
 import type { Word } from "@/types/vocabulary"
 import type { TestAvailabilityResponse, TestWeek } from "@/types/test"
 
@@ -143,20 +144,9 @@ export function WordListScreen({
     setTimeout(() => setToast(null), 3000)
   }
 
-  const speakEnglish = async (text: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-
-    try {
-      // edge-tts API를 통한 음성 재생
-      const apiUrl = `http://localhost:8000/api/v1/tts/speak?text=${encodeURIComponent(text)}`
-
-      const audio = new Audio(apiUrl)
-      await audio.play()
-    } catch (error) {
-      console.error("TTS playback error:", error)
-      showToast("음성 재생에 실패했습니다", "error")
-    }
-  }
+  const { speakWithEvent, isSpeaking } = useTTS({
+    onError: () => showToast("음성 재생에 실패했습니다", "error")
+  })
 
   const startEdit = (word: Word, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -621,12 +611,13 @@ export function WordListScreen({
                             {!isTestMode && (
                               <>
                                 <button
-                                  onClick={(e) => speakEnglish(word.english, e)}
-                                  className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95"
+                                  onClick={(e) => speakWithEvent(word.english, e)}
+                                  disabled={isSpeaking}
+                                  className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95 disabled:opacity-50"
                                   aria-label="발음 듣기"
                                   title="영어 발음 듣기"
                                 >
-                                  <Volume2 className="w-4 h-4" />
+                                  <Volume2 className={`w-4 h-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
                                 </button>
                                 <button
                                   onClick={(e) => startEdit(word, e)}

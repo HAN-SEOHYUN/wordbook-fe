@@ -3,8 +3,9 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, List, ArrowLeftRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, List, ArrowLeftRight, Volume2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTTS } from "@/hooks/use-tts"
 
 interface Word {
   id: number
@@ -25,6 +26,8 @@ export function FlashcardScreen({ words, initialIndex, onBack }: FlashcardScreen
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
   const [isKoreanFirst, setIsKoreanFirst] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
+
+  const { speakWithEvent, isSpeaking } = useTTS()
 
   const isCompleted = currentIndex >= words.length
   const currentWord = !isCompleted ? words[currentIndex] : null
@@ -243,6 +246,16 @@ export function FlashcardScreen({ words, initialIndex, onBack }: FlashcardScreen
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-wide leading-tight px-4">
                   {isKoreanFirst ? currentWord!.korean : currentWord!.english}
                 </h2>
+                {!isKoreanFirst && (
+                  <button
+                    onClick={(e) => speakWithEvent(currentWord!.english, e)}
+                    disabled={isSpeaking}
+                    className="mt-4 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95 disabled:opacity-50"
+                    aria-label="발음 듣기"
+                  >
+                    <Volume2 className={`w-5 h-5 ${isSpeaking ? 'animate-pulse' : ''}`} />
+                  </button>
+                )}
               </div>
               <div className="absolute bottom-8 flex items-center gap-2 text-xs text-muted-foreground">
                 <div className="w-8 h-1 rounded-full bg-muted-foreground/20" />
@@ -270,6 +283,16 @@ export function FlashcardScreen({ words, initialIndex, onBack }: FlashcardScreen
                 <p className="text-2xl md:text-3xl font-bold text-foreground leading-relaxed px-4">
                   {isKoreanFirst ? currentWord!.english : currentWord!.korean}
                 </p>
+                {isKoreanFirst && (
+                  <button
+                    onClick={(e) => speakWithEvent(currentWord!.english, e)}
+                    disabled={isSpeaking}
+                    className="mt-4 p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95 disabled:opacity-50"
+                    aria-label="발음 듣기"
+                  >
+                    <Volume2 className={`w-5 h-5 ${isSpeaking ? 'animate-pulse' : ''}`} />
+                  </button>
+                )}
                 <div className="mt-8 pt-6 border-t border-border/50">
                   <p className="text-base text-muted-foreground font-medium">
                     {isKoreanFirst ? currentWord!.korean : currentWord!.english}
