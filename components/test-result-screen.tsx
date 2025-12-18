@@ -53,38 +53,46 @@ export function TestResultScreen({ result, userName, weekName, onBackToList }: T
           {results.map((item, index) => (
             <div
               key={item.ta_id}
-              className={`bg-card border rounded-2xl p-5 ${
-                item.is_correct ? "border-accent/30" : "border-destructive/30"
+              className={`bg-card border-2 rounded-2xl p-5 ${
+                item.is_correct ? "border-green-500/50 bg-green-500/5" : "border-destructive/50 bg-destructive/5"
               }`}
             >
               <div className="flex items-start gap-4">
                 <div
                   className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                    item.is_correct ? "bg-accent/20" : "bg-destructive/20"
+                    item.is_correct ? "bg-green-500/20" : "bg-destructive/20"
                   }`}
                 >
                   {item.is_correct ? (
-                    <Check className="w-5 h-5 text-accent" />
+                    <Check className="w-6 h-6 text-green-500" strokeWidth={3} />
                   ) : (
                     <X className="w-5 h-5 text-destructive" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                      item.is_correct ? "bg-green-500/20 text-green-600" : "bg-destructive/20 text-destructive"
+                    }`}>
+                      {item.is_correct ? "정답" : "오답"}
+                    </span>
                     <span className="text-xs font-semibold text-muted-foreground">문제 {index + 1}</span>
-                    <span className="text-base font-semibold text-foreground">{item.word_meaning}</span>
                   </div>
+                  <p className="text-base font-semibold text-foreground mb-2">{item.word_meaning}</p>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground w-12">정답:</span>
-                      <span className="text-sm font-semibold text-foreground">{item.word_english}</span>
+                      <span className="text-xs text-muted-foreground w-12">내 답:</span>
+                      <span className={`text-sm font-semibold ${
+                        item.is_correct ? "text-green-600" : "text-destructive line-through"
+                      }`}>
+                        {item.user_answer || "(답안 없음)"}
+                      </span>
+                      {item.is_correct && <Check className="w-4 h-4 text-green-500" />}
                     </div>
                     {!item.is_correct && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground w-12">내 답:</span>
-                        <span className="text-sm font-semibold text-destructive line-through">
-                          {item.user_answer || "(답안 없음)"}
-                        </span>
+                        <span className="text-xs text-muted-foreground w-12">정답:</span>
+                        <span className="text-sm font-semibold text-foreground">{item.word_english}</span>
                       </div>
                     )}
                   </div>
