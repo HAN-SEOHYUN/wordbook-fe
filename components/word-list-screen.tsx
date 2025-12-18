@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, MouseEvent } from "react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import {
   History,
@@ -17,11 +17,8 @@ import {
   Plus,
 } from "lucide-react"
 import { vocabularyAPI } from "@/lib/api/vocabulary"
-import { Textarea } from "@/components/ui/textarea"
 import type { Word } from "@/types/vocabulary"
 import type { TestAvailabilityResponse, TestWeek } from "@/types/test"
-
-const PALETTE = ["#2D464A", "#E86A55", "#8B2C79"]
 
 interface WordListScreenProps {
   words: Word[]
@@ -61,11 +58,76 @@ export function WordListScreen({
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editEnglish, setEditEnglish] = useState("")
   const [editKorean, setEditKorean] = useState("")
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [newEnglish, setNewEnglish] = useState("")
   const [newKorean, setNewKorean] = useState("")
   const [isTestMode, setIsTestMode] = useState(false)
+
+  const PALETTE = ["#2D464A", "#E86A55", "#8B2C79"]
+
+  // 날짜 리스트 스크롤 관련 상태 및 핸들러
+  const dateListRef = useRef<HTMLDivElement>(null)
+  const [showLeftArrow, setShowLeftArrow] = useState(false)
+  const [showRightArrow, setShowRightArrow] = useState(false)
+
+  const checkScrollButtons = () => {
+    if (dateListRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = dateListRef.current
+      setShowLeftArrow(scrollLeft > 0)
+      // 오차 범위를 1px 정도 두어 정확성 보정
+      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 1)
+    }
+  }
+
+  const scrollDateList = (direction: "left" | "right") => {
+    if (dateListRef.current) {
+      const scrollAmount = 200
+      dateListRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      })
+    }
+  }
+
+  // 초기 로드, 날짜 변경, 화면 크기 변경 시 스크롤 버튼 상태 체크
+  useEffect(() => {
+    checkScrollButtons()
+    window.addEventListener("resize", checkScrollButtons)
+    return () => window.removeEventListener("resize", checkScrollButtons)
+  }, [availableDates])
+
+  // 주차 선택 시 해당 주차의 첫 날짜로 스크롤
+  const handleWeekSelectWithScroll = (week: TestWeek) => {
+    onWeekSelect(week)
+    
+    // 해당 주차에 포함된 날짜 찾기 (availableDates 원래 순서 유지 = 화면 표시 순서)
+    const weekDates = availableDates.filter(
+      (date) => date >= week.start_date && date <= week.end_date
+    )
+    
+    if (weekDates.length > 0 && dateListRef.current) {
+      // 화면에서 가장 왼쪽에 있는 날짜 (첫 번째)로 스크롤
+      const firstDateInWeek = weekDates[0]
+      
+      // 약간의 지연 후 스크롤 (DOM 업데이트 대기)
+      setTimeout(() => {
+        const targetButton = dateListRef.current?.querySelector(
+          `[data-date="${firstDateInWeek}"]`
+        )
+        
+        if (targetButton) {
+          targetButton.scrollIntoView({
+            behavior: 'smooth',
+            inline: 'start',
+            block: 'nearest'
+          })
+          // 스크롤 후 버튼 상태 업데이트
+          setTimeout(checkScrollButtons, 300)
+        }
+      }, 50)
+    }
+  }
 
   // 시험 시간이면 자동으로 isTestMode = true
   useEffect(() => {
@@ -76,17 +138,12 @@ export function WordListScreen({
     }
   }, [testAvailability])
 
-  const showToast = (message: string, type: "success" | "error" | "info") => {
+  const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
   }
 
-  const handleStartTestClick = () => {
-    showToast("🚧 단어 테스트 기능은 더 멋진 모습으로 찾아뵙기 위해 준비 중이에요! 조금만 기다려주세요.", "info")
-    // onStartTest() // 기능 준비 완료 시 주석 해제
-  }
-
-  const speakEnglish = async (text: string, e: MouseEvent) => {
+  const speakEnglish = async (text: string, e: React.MouseEvent) => {
     e.stopPropagation()
 
     try {
@@ -101,21 +158,21 @@ export function WordListScreen({
     }
   }
 
-  const startEdit = (word: Word, e: MouseEvent) => {
+  const startEdit = (word: Word, e: React.MouseEvent) => {
     e.stopPropagation()
     setEditingId(word.id)
     setEditEnglish(word.english)
     setEditKorean(word.korean)
   }
 
-  const cancelEdit = (e: MouseEvent) => {
+  const cancelEdit = (e: React.MouseEvent) => {
     e.stopPropagation()
     setEditingId(null)
     setEditEnglish("")
     setEditKorean("")
   }
 
-  const saveEdit = async (e: MouseEvent) => {
+  const saveEdit = async (e: React.MouseEvent) => {
     e.stopPropagation()
 
     if (!editEnglish.trim() || !editKorean.trim()) {
@@ -209,63 +266,38 @@ export function WordListScreen({
   // 현재 선택된 날짜의 주차 정보
   const selectedDateWeekInfo = getWeekInfoForDate(selectedDate)
 
-  // 날짜 리스트 스크롤 관련 상태 및 핸들러
-  const dateListRef = useRef<HTMLDivElement>(null)
-  const [showLeftArrow, setShowLeftArrow] = useState(false)
-  const [showRightArrow, setShowRightArrow] = useState(false)
-
-  const checkScrollButtons = () => {
-    if (dateListRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = dateListRef.current
-      setShowLeftArrow(scrollLeft > 0)
-      // 오차 범위를 1px 정도 두어 정확성 보정
-      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 1)
-    }
-  }
-
-  const scrollDateList = (direction: "left" | "right") => {
-    if (dateListRef.current) {
-      const scrollAmount = 200
-      dateListRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      })
-    }
-  }
-
-  // 초기 로드, 날짜 변경, 화면 크기 변경 시 스크롤 버튼 상태 체크
-  useEffect(() => {
-    checkScrollButtons()
-    window.addEventListener("resize", checkScrollButtons)
-    return () => window.removeEventListener("resize", checkScrollButtons)
-  }, [availableDates])
-
   return (
     <div className="min-h-screen pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-card border-b border-border shadow-sm">
-        <div className="px-6 py-5">
-          <div className="flex flex-col gap-3 mb-2 sm:flex-row sm:items-center sm:justify-between">
+      <header className="sticky top-0 z-20 bg-card border-b border-border shadow-sm">
+        <div className="px-4 py-3 sm:px-6 sm:py-4">
+          {/* 컨테이너: 모바일은 세로, SM 이상은 가로 배치 */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* 로고 영역 */}
             <div className="flex-shrink-0">
-              <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground mb-1 whitespace-nowrap">
-                <Image src="/bee.png" alt="Bee" width={32} height={32} className="object-contain" />
-                Wordbook
-              </h1>
-              <p className="text-sm text-muted-foreground">{selectedDate ? formatDate(selectedDate) : "날짜를 선택하세요"}</p>
+              <Image 
+                src="/wordbook_logo.PNG" 
+                alt="Wordbook Logo" 
+                width={180} 
+                height={48} 
+                className="object-contain h-8 sm:h-10 md:h-12 w-auto" 
+                priority 
+              />
             </div>
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end">
+            {/* 버튼 그룹: 항상 가로 배치 */}
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={onViewHistory}
-                className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-muted text-muted-foreground hover:bg-muted/80 rounded-full transition-all active:scale-95 shadow-sm"
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs font-semibold bg-muted text-muted-foreground hover:bg-muted/80 rounded-full transition-all active:scale-95 shadow-sm"
               >
                 <History className="w-3.5 h-3.5" />
                 <span className="whitespace-nowrap">기록</span>
               </button>
               <button
                 onClick={() => setIsTestMode(!isTestMode)}
-                className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full transition-all active:scale-95 shadow-sm ${isTestMode
-                  ? "bg-accent text-accent-foreground hover:bg-accent/90"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs font-semibold rounded-full transition-all active:scale-95 shadow-sm ${isTestMode
+                    ? "bg-accent text-accent-foreground hover:bg-accent/90"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }`}
               >
                 {isTestMode ? (
@@ -280,23 +312,16 @@ export function WordListScreen({
                   </>
                 )}
               </button>
-              {!isTestMode && (currentLink || isLoading) && (
-                isLoading ? (
-                  <div className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-muted-foreground/40 bg-muted/20 rounded-full shadow-sm select-none">
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span className="whitespace-nowrap">원문 보기</span>
-                  </div>
-                ) : (
-                  <a
-                    href={currentLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-full transition-all active:scale-95 shadow-sm"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span className="whitespace-nowrap">원문 보기</span>
-                  </a>
-                )
+              {!isTestMode && currentLink && (
+                <a
+                  href={currentLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-full transition-all active:scale-95 shadow-sm"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span className="whitespace-nowrap">원문 보기</span>
+                </a>
               )}
             </div>
           </div>
@@ -305,7 +330,7 @@ export function WordListScreen({
 
       {/* Test Mode Alert Banner */}
       {isTestMode && (
-        <div className="sticky top-[88px] z-10 bg-yellow-500/10 border-b border-yellow-500/30 backdrop-blur-md">
+        <div className="sticky top-[88px] sm:top-[72px] md:top-[80px] z-10 bg-yellow-500/10 border-b border-yellow-500/30 backdrop-blur-md">
           <div className="px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Trophy className="w-5 h-5 text-yellow-600" />
@@ -327,8 +352,7 @@ export function WordListScreen({
       {!isTestMode && (
         <>
           {/* 주차 선택 영역 */}
-          {/* 주차 선택 영역 */}
-          <div className="sticky top-[88px] z-10 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
+          <div className="sticky top-[88px] sm:top-[72px] md:top-[80px] z-10 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
             <div className="overflow-x-auto scrollbar-hide">
               <div className="flex px-4 min-w-max">
                 {availableWeeks
@@ -345,7 +369,7 @@ export function WordListScreen({
                     return (
                       <button
                         key={week.twi_id}
-                        onClick={() => onWeekSelect(week)}
+                        onClick={() => handleWeekSelectWithScroll(week)}
                         style={{
                           color: isSelected ? color : undefined,
                           borderColor: isSelected ? color : "transparent",
@@ -367,27 +391,27 @@ export function WordListScreen({
           </div>
 
           {/* 날짜 선택 영역 */}
-          <div className="sticky top-[138px] z-10 bg-background/98 backdrop-blur-md border-b border-border shadow-sm">
+          <div className="sticky top-[136px] sm:top-[120px] md:top-[128px] z-10 bg-background/98 backdrop-blur-md border-b border-border shadow-sm">
             <div className="relative group">
-              {/* 왼쪽 화살표 버튼 (PC 전용) */}
+              {/* 왼쪽 화살표 버튼 */}
               {availableDates.length > 0 && showLeftArrow && (
                 <button
                   onClick={() => scrollDateList("left")}
-                  className="flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-background/90 backdrop-blur-xl shadow-lg shadow-primary/10 rounded-full border border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 group"
+                  className="flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-background/90 backdrop-blur-xl shadow-lg shadow-primary/10 rounded-full border border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300"
                   aria-label="이전 날짜 보기"
                 >
-                  <ChevronLeft className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-0.5" />
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
               )}
 
-              {/* 오른쪽 화살표 버튼 (PC 전용) */}
+              {/* 오른쪽 화살표 버튼 */}
               {availableDates.length > 0 && showRightArrow && (
                 <button
                   onClick={() => scrollDateList("right")}
-                  className="flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-background/90 backdrop-blur-xl shadow-lg shadow-primary/10 rounded-full border border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 group"
+                  className="flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-background/90 backdrop-blur-xl shadow-lg shadow-primary/10 rounded-full border border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-xl hover:shadow-primary/20 transition-all duration-300"
                   aria-label="다음 날짜 보기"
                 >
-                  <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                  <ChevronRight className="w-5 h-5" />
                 </button>
               )}
 
@@ -423,6 +447,7 @@ export function WordListScreen({
                     return (
                       <button
                         key={date}
+                        data-date={date}
                         onClick={() => onDateChange(date)}
                         style={dynamicStyle}
                         className={className}
@@ -464,7 +489,7 @@ export function WordListScreen({
           {isTestMode && (
             <div className="px-5 pt-6 pb-2 max-w-2xl mx-auto">
               <button
-                onClick={handleStartTestClick}
+                onClick={onStartTest}
                 className="relative w-full bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-400 text-white rounded-3xl p-8 hover:from-yellow-500 hover:via-amber-600 hover:to-orange-500 active:scale-[0.97] transition-all duration-300 overflow-hidden group"
               >
                 {/* Animated gradient overlay */}
@@ -529,19 +554,18 @@ export function WordListScreen({
                               type="text"
                               value={editEnglish}
                               onChange={(e) => setEditEnglish(e.target.value)}
-                              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
+                              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                               placeholder="영어 단어 또는 구문"
                             />
                           </div>
 
                           <div>
                             <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
-                            <Textarea
-                              autoResize
-                              maxHeight={200}
+                            <input
+                              type="text"
                               value={editKorean}
                               onChange={(e) => setEditKorean(e.target.value)}
-                              className="bg-background border border-border rounded-xl px-4 py-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
+                              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                               placeholder="한국어 뜻"
                             />
                           </div>
@@ -565,46 +589,59 @@ export function WordListScreen({
                         </div>
                       </div>
                     ) : (
-                      <div
-                        className="w-full group cursor-pointer"
-                        onClick={() => onWordSelect(index)}
-                      >
+                      <div className="w-full group">
                         <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
+                          <div
+                            className="flex-1 min-w-0 cursor-pointer"
+                            onClick={() => onWordSelect(index)}
+                          >
                             <div className="flex items-center gap-3 mb-3">
                               <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
                                 {index + 1}
                               </span>
-                              <h3 className="text-xl font-bold text-foreground tracking-wide leading-tight">
-                                {word.english}
-                              </h3>
+                              {isTestMode ? (
+                                <div className="flex-1 h-7 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse" />
+                              ) : (
+                                <h3 className="text-xl font-bold text-foreground tracking-wide leading-tight">
+                                  {word.english}
+                                </h3>
+                              )}
                             </div>
+                            <div className="h-px bg-gradient-to-r from-border to-transparent mb-3" />
+                            {isTestMode ? (
+                              <div className="pl-10 space-y-2">
+                                <div className="h-5 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse w-3/4" />
+                                <div className="h-5 bg-gradient-to-r from-muted to-muted/50 rounded-lg animate-pulse w-1/2" />
+                              </div>
+                            ) : (
+                              <p className="text-base text-muted-foreground leading-relaxed pl-10">{word.korean}</p>
+                            )}
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0 mt-1">
-                            <button
-                              onClick={(e) => speakEnglish(word.english, e)}
-                              className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95"
-                              aria-label="발음 듣기"
-                              title="영어 발음 듣기"
-                            >
-                              <Volume2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={(e) => startEdit(word, e)}
-                              className="p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all active:scale-95"
-                              aria-label="수정"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <ChevronRight
-                              className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all"
-                            />
+                            {!isTestMode && (
+                              <>
+                                <button
+                                  onClick={(e) => speakEnglish(word.english, e)}
+                                  className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95"
+                                  aria-label="발음 듣기"
+                                  title="영어 발음 듣기"
+                                >
+                                  <Volume2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={(e) => startEdit(word, e)}
+                                  className="p-2 rounded-lg bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all active:scale-95"
+                                  aria-label="수정"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                            {!isTestMode && (
+                              <ChevronRight className="w-6 h-6 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all cursor-pointer" onClick={() => onWordSelect(index)} />
+                            )}
                           </div>
                         </div>
-                        <div className="h-px bg-gradient-to-r from-border to-transparent mt-2 mb-3" />
-                        <p className="text-base text-muted-foreground leading-relaxed pl-10 break-words">
-                          {word.korean}
-                        </p>
                       </div>
                     )}
                   </div>
@@ -631,7 +668,7 @@ export function WordListScreen({
                           type="text"
                           value={newEnglish}
                           onChange={(e) => setNewEnglish(e.target.value)}
-                          className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
+                          className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                           placeholder="영어 단어 또는 구문"
                           autoFocus
                         />
@@ -639,12 +676,11 @@ export function WordListScreen({
 
                       <div>
                         <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
-                        <Textarea
-                          autoResize
-                          maxHeight={200}
+                        <input
+                          type="text"
                           value={newKorean}
                           onChange={(e) => setNewKorean(e.target.value)}
-                          className="bg-background border border-border rounded-xl px-4 py-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
+                          className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                           placeholder="한국어 뜻"
                         />
                       </div>
@@ -715,7 +751,7 @@ export function WordListScreen({
                         type="text"
                         value={newEnglish}
                         onChange={(e) => setNewEnglish(e.target.value)}
-                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
+                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                         placeholder="영어 단어 또는 구문"
                         autoFocus
                       />
@@ -723,12 +759,11 @@ export function WordListScreen({
 
                     <div>
                       <label className="block text-xs font-medium text-muted-foreground mb-1.5 pl-1">한국어</label>
-                      <Textarea
-                        autoResize
-                        maxHeight={200}
+                      <input
+                        type="text"
                         value={newKorean}
                         onChange={(e) => setNewKorean(e.target.value)}
-                        className="bg-background border border-border rounded-xl px-4 py-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/40"
+                        className="w-full px-4 py-3 bg-background border border-border rounded-xl text-base text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                         placeholder="한국어 뜻"
                       />
                     </div>
@@ -772,10 +807,8 @@ export function WordListScreen({
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
           <div
             className={`px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-md border ${toast.type === "success"
-              ? "bg-accent/95 border-accent text-accent-foreground"
-              : toast.type === "error"
-                ? "bg-destructive/95 border-destructive text-destructive-foreground"
-                : "bg-blue-500/95 border-blue-500 text-white" // info type
+                ? "bg-accent/95 border-accent text-accent-foreground"
+                : "bg-destructive/95 border-destructive text-destructive-foreground"
               }`}
           >
             <p className="font-semibold text-sm">{toast.message}</p>
