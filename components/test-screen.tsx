@@ -100,7 +100,7 @@ export function TestScreen({ trId, words, userName, weekName, onComplete, onBack
                       type="text"
                       value={userAnswers[word.tw_id]}
                       onChange={(e) => handleAnswerChange(word.tw_id, e.target.value)}
-                      className="w-full px-4 py-3 bg-background border-2 border-border rounded-xl text-base font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                      className="w-full px-4 py-3 bg-background border-2 border-border rounded-xl text-base font-semibold text-foreground placeholder:text-muted-foreground/60 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                       placeholder="영어로 입력하세요"
                       disabled={isSubmitting}
                     />
